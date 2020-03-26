@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "./src",
+    "outDir": "./dist",
     "sourceMap": false,
     "strict": true,
     "esModuleInterop": true,
@@ -10,7 +10,7 @@
     "moduleResolution": "node"
   },
   "include": [
-    "ts_src/*.ts"
+    "src/*.ts"
   ],
   "exclude": [
     "**/*.spec.ts",

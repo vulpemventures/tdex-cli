@@ -1,0 +1,26 @@
+{
+  "name": "alpha-wallet",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Vulpem Ventures",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "commander": "^5.0.0",
+    "inquirer": "^7.1.0",
+    "liquidjs-lib": "vulpemventures/liquidjs-lib",
+    "ora": "^4.0.3",
+    "protobufjs": "~6.8.9"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
+    "@types/inquirer": "^6.5.0",
+    "@types/node": "^12.12.31",
+    "@types/ora": "^3.2.0",
+    "typescript": "^3.8.3"
+  }
+}

@@ -5,7 +5,7 @@ import { Network } from 'liquidjs-lib/types/networks';
 
 export interface WalletInterface {
   keyPair: ECPairInterface;
-  privateKey: Buffer;
+  privateKey: string;
   publicKey: string;
   address: string;
   network: Network;
@@ -15,25 +15,29 @@ export interface WalletInterface {
 export default class Wallet implements WalletInterface {
   
   keyPair: ECPairInterface;
-  privateKey: Buffer;
-  
+  privateKey: string;
   publicKey: string;
   address: string;
   network: Network;
 
-  constructor(args) {
-    const { network, keyPair } = args; 
+  constructor(args:any) {
+    const { network, keyPair } : {network:string, keyPair: ECPairInterface} = args; 
 
     if (!keyPair)
       this.keyPair = ECPair.makeRandom({ 
-        network: network ? networks[network] : networks.liquid 
+        network: network ? (networks as any)[network] : networks.liquid 
       });
     else
       this.keyPair = keyPair;
     
-    this.privateKey = this.keyPair.privateKey;
+    this.privateKey = this.keyPair.privateKey!.toString('hex');
+    this.publicKey = this.keyPair.publicKey!.toString('hex');
+
     this.network = this.keyPair.network;
-    this.address = payments.p2wpkh({ pubkey: this.keyPair.publicKey, network: this.network }).address;
+    this.address = payments.p2wpkh({ 
+      pubkey: this.keyPair.publicKey, 
+      network: this.network 
+    }).address!;
   }
 
   sign(psbtBase64: string): string {
@@ -57,7 +61,7 @@ export default class Wallet implements WalletInterface {
 
 export function fromWIF(wif: string, network?: string): WalletInterface {
 
-  const _network = network ? networks[network] : networks.liquid 
+  const _network = network ? (networks as any)[network] : networks.liquid 
 
   try {
 

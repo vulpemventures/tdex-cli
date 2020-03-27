@@ -6,8 +6,6 @@
 //  3. Start swap proposal 
 //  4. Parsing acceptance from the daemon & sign
 //  5. Sending signed swap back to daemon. 
-
-import * as path from 'path';
 import { program } from 'commander';
 
 //Components
@@ -19,10 +17,10 @@ import {
   marketListAction, 
   connectAction,
   marketPriceAction,
-  walletBalanceAction
+  walletBalanceAction,
+  swapAction,
 } from './actions';
 import { NETWORKS } from './helpers';
-
 
 
 const pkg = require('../package.json');
@@ -90,11 +88,9 @@ wallet
  * swap
  */
 program
-  .command('swap <amount> <asset>')
-  .description('Make a swap proposal of <amount> <asset>')
-  .action(() => {
-
-  });
+  .command('swap')
+  .description('Make a swap proposal')
+  .action(swapAction);
 
 
 program.parse(process.argv);

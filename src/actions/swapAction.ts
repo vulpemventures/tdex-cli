@@ -1,11 +1,10 @@
 import { info, log, error, success } from '../logger';
-
+import { createTx } from '../wallet';
+import { makeid } from '../helpers';
 import State from '../state';
-import { fetchBalances } from '../wallet';
 const state = new State();
 
 const { Toggle, NumberPrompt, Confirm } = require('enquirer');
-
 
 // 1. Fetch utxos 
 // 2. CHeck if input amount is enough
@@ -28,7 +27,7 @@ export default function () {
 
   if (!wallet.selected)
     return error('A wallet is required. Create or restoste with wallet command');
- 
+
 
   const [tickerA, tickerB] = Object.keys(market.assets);
   const toggle = new Toggle({
@@ -46,9 +45,13 @@ export default function () {
   });
 
 
-  
-  let toBeSent:string, toReceive:string
-  toggle.run().then((isTickerA:Boolean) => {
+
+  let toBeSent: string,
+    toReceive: string,
+    amountToBeSent: number,
+    amountToReceive: number;
+
+  toggle.run().then((isTickerA: Boolean) => {
     if (isTickerA) {
       toBeSent = tickerA;
       toReceive = tickerB;
@@ -58,19 +61,48 @@ export default function () {
     }
 
     return amount.run();
-  }).then((amountToBeSent: number) => {
-
-    const amountToReceive = amountToBeSent * (toBeSent === 'LBTC' ? 6000 : 0.000167);
-    log(`Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive circa ${toReceive} ${amountToReceive} based on current market rate`);
+  }).then((inputAmount: number) => {
+    amountToBeSent = inputAmount;
+    // Fetch market rate from daemon and calulcate prices for each ticker
+    // client.Balances().then( balances => { })
+    const OneOfTickerB = 6000;
+    const OneOfTickerA = 0.000167;
+    amountToReceive = amountToBeSent * (toBeSent === 'LBTC' ? OneOfTickerB : OneOfTickerA);
+    const amountToReceiveString = amountToReceive.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 8 })
+    log(`Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive circa ${toReceive} ${amountToReceiveString} based on current market rate`);
 
     return confirm.run()
   }).then((keepGoing: Boolean) => {
     if (!keepGoing)
       return log('Terminated');
-    
-    success(`\nSending Swap Proposal to provider...\n`)
-    setTimeout(() => success("Swap succesful!"), 800);
-    //DO the magic and swap all the things
+
+    // Wait for the stream with either the SwapAccet or SwapFail message
+    // We are going to send somethin like 
+    const unsignedPsbt = createTx(wallet.address, (market.assets as any), network.explorer);
+    const TradeRequest = {
+      SwapRequest: {
+        id: makeid(8),
+        amount_p: amountToBeSent,
+        asset_p: (market.assets as any)[toBeSent],
+        amount_r: amountToReceive,
+        asset_r: (market.assets as any)[toReceive],
+        transaction: unsignedPsbt
+      }
+    }
+
+    info(JSON.stringify(TradeRequest, undefined, 2));
+    log(`\nSending SwapRequest to provider...\n`)
+    // client.Trade().then( stream => { })
+    setTimeout(() => {
+      success("Swap has been accepted!\n");
+      log("Signing with private key...");
+      log("Sending SwapComplete to provider...\n");
+    }, 800);
+
+    // Send back the signed transaction
+    // client.TradeComplete().then( txHahs => )
+    setTimeout(() => success("Swap completed!\n"), 1600);
+
   }).catch(error);
 
 

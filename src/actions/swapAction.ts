@@ -1,7 +1,7 @@
 import { info, log, error, success } from '../logger';
 import { makeid } from '../helpers';
 import State from '../state';
-import Wallet, { fetchUtxos, WalletInterface, fromWIF } from '../wallet';
+import { fetchUtxos, WalletInterface, fromWIF, createTx } from '../wallet';
 import { decrypt } from '../crypto';
 const state = new State();
 
@@ -20,14 +20,14 @@ export default function (cmdObj: any) {
 
   const { wallet, provider, market, network } = state.get();
 
-  if (!provider.selected)
+  if (!cmdObj.local && !provider.selected)
     return error('A provider is required. Select one with connect <endpoint> command');
 
   if (!market.selected)
     return error('A market is required. Select one with market <pair> command');
 
   if (!wallet.selected)
-    return error('A wallet is required. Create or restoste with wallet command');
+    return error('A wallet is required. Create or restore with wallet command');
 
 
   const [tickerA, tickerB] = Object.keys(market.assets);
@@ -36,9 +36,9 @@ export default function (cmdObj: any) {
     enabled: tickerA,
     disabled: tickerB
   });
-  const amount = new NumberPrompt({
+  const amount = (message:string) => new NumberPrompt({
     name: 'number',
-    message: `How much do you want to send?`
+    message
   });
   const confirm = new Confirm({
     name: 'question',
@@ -47,7 +47,7 @@ export default function (cmdObj: any) {
   const password = new Password({
     type: 'password',
     name: 'key',
-    message: 'Type your private key WIF (Wallet Import Format)'
+    message: 'Type your password'
   });
 
   let walletInstance: WalletInterface, 
@@ -65,28 +65,37 @@ export default function (cmdObj: any) {
       toReceive = tickerA;
     }
 
-    return amount.run();
+    return amount(`How much do you want to send?`).run()
   }).then((inputAmount: number) => {
     amountToBeSent = inputAmount;
+
+    const execute = cmdObj.local ?
+      () => amount(`How much do you want to receive?`).run() :
+      () => Promise.resolve();
+    
+    return execute()
+  }).then((outputAmountOrNothing: number) => {
     // Fetch market rate from daemon and calulcate prices for each ticker
-    // client.Balances().then( balances => { })
+    // client.Balances().then( balances => {})
     const OneOfTickerB = 6000;
     const OneOfTickerA = 0.000167;
-    amountToReceive = amountToBeSent * (toBeSent === 'LBTC' ? OneOfTickerB : OneOfTickerA);
-    amountToReceive = Number(
-      amountToReceive
+    let amountToReceiveFromProvider = amountToBeSent * (toBeSent === 'LBTC' ? OneOfTickerB : OneOfTickerA);
+    amountToReceiveFromProvider = Number(
+      amountToReceiveFromProvider
         .toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 8 })
         .replace(',','')
     );
-    log(`Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive circa ${toReceive} ${amountToReceive} based on current market rate`);
+    amountToReceive = cmdObj.local ? outputAmountOrNothing : amountToReceiveFromProvider;
+    
+    log(`Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive ${toReceive} ${amountToReceive}`);
 
     return confirm.run()
   }).then((keepGoing: Boolean) => {
     if (!keepGoing)
-      throw 'Terminated';
+      throw 'Canceled';
   
     const execute = wallet.keystore.type === "encrypted" ? 
-      password.run : 
+      () => password.run() : 
       () => Promise.resolve(wallet.keystore.value);   
 
     return execute()
@@ -104,7 +113,9 @@ export default function (cmdObj: any) {
     amountToBeSent = Math.floor(amountToBeSent * Math.pow(10,8));
     amountToReceive = Math.floor(amountToReceive * Math.pow(10,8));
 
-    return walletInstance.createTx(
+    const psbtBase64 = createTx();
+    return walletInstance.updateTx(
+      psbtBase64,
       utxos,
       amountToBeSent,
       amountToReceive,
@@ -128,6 +139,10 @@ export default function (cmdObj: any) {
 
     if (cmdObj.verbose)
       info(JSON.stringify(TradeRequest, undefined, 2));
+
+    if (cmdObj.local) 
+      return success(`\nSwapRequest message\n\n${JSON.stringify(TradeRequest.SwapRequest)}`);
+
     log(`\nSending SwapRequest to provider...\n`)
     // client.Trade().then( stream => { })
     setTimeout(() => {

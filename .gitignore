@@ -2,6 +2,8 @@
 state.json
 dist
 .DS_Store
+*-darwin
+*-linux
 # Logs
 logs
 *.log

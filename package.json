@@ -12,11 +12,15 @@
   "bin": {
     "tdex-cli": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "npx tsc -p ./.tsconfig.json",
+    "build": "npm run clean && npx tsc -p ./.tsconfig.json",
+    "build-darwin": "npm run build && npx nexe dist/index.js -t darwin-x64 -o tdex-cli-darwin",
+    "build-linux": "npm run build &&  npx nexe dist/index.js -t linux-x64 -o tdex-cli-linux",
     "clean": "npx rimraf dist",
-    "test": "npm run clean && npm run build && npm run unit",
+    "test": "npm run build && npm run unit",
     "unit": "npx mocha tests/**/*.js"
   },
   "dependencies": {
@@ -33,6 +37,7 @@
     "@types/node": "^12.12.31",
     "@types/ora": "^3.2.0",
     "mocha": "^7.1.1",
+    "nexe": "^3.3.2",
     "rimraf": "^3.0.2",
     "typescript": "^3.8.3"
   }

@@ -1,14 +1,19 @@
 # alpha-wallet
 Wallet CLI for making swaps on TDEX
 
-## Usage
-
-### Install
+## Install
 
 * Install from NPM
+
 ```sh
 $ npm install -g tdex-cli
 ```
+
+* Download standalone binary (nodejs/npm not needed)
+  * [Download latest release for Mac or Linux](https://github.com/Sevenlab/tdex-cli/releases)
+
+
+## Custom datadir
 
 * Configure custom directory for data persistence (Default ~/.tdex)
 
@@ -16,6 +21,9 @@ $ npm install -g tdex-cli
 $ export TDEX_CLI_PATH=/path/to/data/dir 
 $ tdex-cli help
 ```
+
+## Commands
+
 ### Network
 
 * Set the network to work against 

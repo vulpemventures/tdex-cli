@@ -1,0 +1,10 @@
+{
+  "LBTC-USDT": {
+    "LBTC": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
+    "USDT": "c5870288a7c9eb5db398a5b5e7221feb9753134439e8ed9f569b0eea5a423330"
+  },
+  "LBTC-EQUI": {
+    "LBTC": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
+    "EQUI": "fe878bfa0a2bbc12d583dc6d962dd07f50256c6ff63f69a35c5ffcdcc6818dac"
+  }
+}

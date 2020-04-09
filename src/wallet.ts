@@ -134,8 +134,6 @@ export default class Wallet implements WalletInterface {
     if (!psbt.validateSignaturesOfInput(index))
       throw new Error('Invalid signature');
 
-    psbt.finalizeInput(index);
-
     return psbt.toBase64();
   }
 

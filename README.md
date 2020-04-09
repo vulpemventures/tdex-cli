@@ -1,4 +1,4 @@
-# alpha-wallet
+# 💻 tdex-cli
 Wallet CLI for making swaps on TDEX
 
 ## Install
@@ -10,7 +10,8 @@ $ npm install -g tdex-cli
 ```
 
 * Download standalone binary (nodejs/npm not needed)
-  * [Download latest release for Mac or Linux](https://github.com/Sevenlab/tdex-cli/releases)
+
+[Download latest release for Mac or Linux](https://github.com/Sevenlab/tdex-cli/releases)
 
 
 ## Custom datadir
@@ -69,10 +70,10 @@ $ tdex-cli market list
 $ tdex-cli market LBTC-USDT
 ```
 
-* Get current exchnage rate for selected market
+* Get current exchange rate for selected market
 
 ```sh
-$ tdex-cli market LBTC-USDT
+$ tdex-cli market price
 ```
 
 ### Wallet 

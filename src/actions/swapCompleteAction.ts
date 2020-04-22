@@ -4,29 +4,30 @@ import { WalletInterface, fromWIF, toHex } from '../wallet';
 import { decrypt } from '../crypto';
 import { makeid } from '../helpers';
 const state = new State();
-
+//eslint-disable-next-line
 const { Confirm, Password } = require('enquirer');
 
 const confirm = new Confirm({
   name: 'question',
-  message: 'Are you sure to confirm?'
+  message: 'Are you sure to confirm?',
 });
 const password = new Password({
   type: 'password',
   name: 'key',
-  message: 'Type your password'
+  message: 'Type your password',
 });
 
-
-export default function (message: string, cmdObj:any): void {
+export default function (message: string, cmdObj: any): void {
   info('=========*** Swap ***==========\n');
 
   const { wallet, network } = state.get();
 
   if (!wallet.selected)
-    return error('A wallet is required. Create or restoste with wallet command');
+    return error(
+      'A wallet is required. Create or restoste with wallet command'
+    );
 
-  let json: any
+  let json: any;
   try {
     json = JSON.parse(message);
   } catch (ignore) {
@@ -36,37 +37,47 @@ export default function (message: string, cmdObj:any): void {
   const psbtBase64 = json.transaction;
   let walletInstance: WalletInterface;
 
-  confirm.run().then((keepGoing: Boolean) => {
-    if (!keepGoing)
-      throw "Canceled";
+  confirm
+    .run()
+    .then((keepGoing: boolean) => {
+      if (!keepGoing) throw 'Canceled';
 
-    const execute = wallet.keystore.type === "encrypted" ?
-      () => password.run() :
-      () => Promise.resolve(wallet.keystore.value);
+      const execute =
+        wallet.keystore.type === 'encrypted'
+          ? () => password.run()
+          : () => Promise.resolve(wallet.keystore.value);
 
-    return execute()
-  }).then((passwordOrWif: string) => {
-    const wif = wallet.keystore.type === "encrypted" ?
-      decrypt(wallet.keystore.value, passwordOrWif) :
-      passwordOrWif;
+      return execute();
+    })
+    .then((passwordOrWif: string) => {
+      const wif =
+        wallet.keystore.type === 'encrypted'
+          ? decrypt(wallet.keystore.value, passwordOrWif)
+          : passwordOrWif;
 
-    walletInstance = fromWIF(wif, network.chain);
+      walletInstance = fromWIF(wif, network.chain);
 
-    log("\nSigning with private key...");
-    return walletInstance.sign(psbtBase64);
-  }).then((signedPsbt: string) => {
-    success("\n√ Done\n");
+      log('\nSigning with private key...');
+      return walletInstance.sign(psbtBase64);
+    })
+    .then((signedPsbt: string) => {
+      success('\n√ Done\n');
 
-    const TradeCompleteRequest = {
-      SwapComplete: {
-        id: makeid(8),
-        accept_id: json.id,
-        transaction: signedPsbt
-      }
-    };
+      const TradeCompleteRequest = {
+        SwapComplete: {
+          id: makeid(8),
+          acceptId: json.id,
+          transaction: signedPsbt,
+        },
+      };
 
-    success(`\nSwapComplete message\n\n${JSON.stringify(TradeCompleteRequest.SwapComplete)}`);
-    if (cmdObj.push)
-      log(`\nSigned transaction (hex format)\n\n${toHex(signedPsbt)}`);
-  }).catch(error)
+      success(
+        `\nSwapComplete message\n\n${JSON.stringify(
+          TradeCompleteRequest.SwapComplete
+        )}`
+      );
+      if (cmdObj.push)
+        log(`\nSigned transaction (hex format)\n\n${toHex(signedPsbt)}`);
+    })
+    .catch(error);
 }

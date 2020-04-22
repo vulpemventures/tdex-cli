@@ -2,19 +2,19 @@
 
 //  0. Load from WIF/Create keyPair
 //  1. Select an endpoint and connect to the daemon
-//  2. Select asset pair and Fetch his market rate 
-//  3. Start swap proposal 
+//  2. Select asset pair and Fetch his market rate
+//  3. Start swap proposal
 //  4. Parsing acceptance from the daemon & sign
-//  5. Sending signed swap back to daemon. 
+//  5. Sending signed swap back to daemon.
 import { program } from 'commander';
 
 //Components
-import { 
-  walletAction, 
-  infoAction, 
-  networkAction, 
-  marketAction, 
-  marketListAction, 
+import {
+  walletAction,
+  infoAction,
+  networkAction,
+  marketAction,
+  marketListAction,
   connectAction,
   marketPriceAction,
   walletBalanceAction,
@@ -23,27 +23,29 @@ import {
   swapCompleteAction,
 } from './actions';
 import { NETWORKS } from './helpers';
-
-
+//eslint-disable-next-line
 const pkg = require('../package.json');
 
-
-program
-  .version(pkg.version)
+program.version(pkg.version);
 
 program
   .command('info')
   .description('Get info about the current session')
-  .action(infoAction)
+  .action(infoAction);
 
 /**
  * Network
  */
 program
   .command('network <chain>')
-  .option('-e, --explorer <endpoint>', 'Set a different electrum server endpoint for connecting to the blockchain')
-  .description('Select the network. Available networks: ' + Object.keys(NETWORKS))
-  .action(networkAction)
+  .option(
+    '-e, --explorer <endpoint>',
+    'Set a different electrum server endpoint for connecting to the blockchain'
+  )
+  .description(
+    'Select the network. Available networks: ' + Object.keys(NETWORKS)
+  )
+  .action(networkAction);
 
 /**
  * Connect
@@ -65,12 +67,12 @@ const market = program
 market
   .command('list')
   .description('Get available assets pairs for current provider')
-  .action(marketListAction)
+  .action(marketListAction);
 
 market
   .command('price')
   .description('Get the current price for the selected market')
-  .action(marketPriceAction)
+  .action(marketPriceAction);
 
 /**
  * Wallet
@@ -84,28 +86,31 @@ const wallet = program
 wallet
   .command('balance')
   .description('Show current wallet balance')
-  .action(walletBalanceAction)
+  .action(walletBalanceAction);
 
 /**
  * swap
  */
 const swap = program
   .command('swap')
-  .option('-v, --verbose', "Show verbose information", false)
-  .option('-l, --local', "Print the SwapRequest message without sending to the provider", false)
+  .option('-v, --verbose', 'Show verbose information', false)
+  .option(
+    '-l, --local',
+    'Print the SwapRequest message without sending to the provider',
+    false
+  )
   .description('Make a swap proposal')
   .action(swapAction);
 
 swap
   .command('accept <message>')
   .description('Parse and accept a given SwapRequest message')
-  .action(swapAcceptAction)
+  .action(swapAcceptAction);
 
 swap
   .command('complete <message>')
-  .option('-p, --push', "Extract hex string and broadcast to the chain")
+  .option('-p, --push', 'Extract hex string and broadcast to the chain')
   .description('Parse and complete a given SwapAccept message')
-  .action(swapCompleteAction)
-
+  .action(swapCompleteAction);
 
 program.parse(process.argv);

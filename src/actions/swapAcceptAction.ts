@@ -7,18 +7,18 @@ import { decrypt } from '../crypto';
 import { makeid, TAXI_API_URL } from '../helpers';
 const state = new State();
 
+//eslint-disable-next-line
 const { Confirm, Password } = require('enquirer');
 
 const confirm = new Confirm({
   name: 'question',
-  message: 'Do you accept the proposed terms?'
+  message: 'Do you accept the proposed terms?',
 });
 const password = new Password({
   type: 'password',
   name: 'key',
-  message: 'Type your password'
+  message: 'Type your password',
 });
-
 
 export default function (message: string): void {
   info('=========*** Swap ***==========\n');
@@ -26,9 +26,11 @@ export default function (message: string): void {
   const { wallet, network } = state.get();
 
   if (!wallet.selected)
-    return error('A wallet is required. Create or restoste with wallet command');
+    return error(
+      'A wallet is required. Create or restoste with wallet command'
+    );
 
-  let json: any
+  let json: any;
   try {
     json = JSON.parse(message);
   } catch (ignore) {
@@ -40,60 +42,78 @@ export default function (message: string): void {
 
   const psbtBase64 = json.transaction;
 
-
   let walletInstance: WalletInterface;
 
-  confirm.run().then((keepGoing: Boolean) => {
-    if (!keepGoing)
-      throw "Canceled";
+  confirm
+    .run()
+    .then((keepGoing: boolean) => {
+      if (!keepGoing) throw 'Canceled';
 
-    const execute = wallet.keystore.type === "encrypted" ?
-      () => password.run() :
-      () => Promise.resolve(wallet.keystore.value);
+      const execute =
+        wallet.keystore.type === 'encrypted'
+          ? () => password.run()
+          : () => Promise.resolve(wallet.keystore.value);
 
-    return execute()
-  }).then((passwordOrWif: string) => {
-    const wif = wallet.keystore.type === "encrypted" ?
-      decrypt(wallet.keystore.value, passwordOrWif) :
-      passwordOrWif;
+      return execute();
+    })
+    .then((passwordOrWif: string) => {
+      const wif =
+        wallet.keystore.type === 'encrypted'
+          ? decrypt(wallet.keystore.value, passwordOrWif)
+          : passwordOrWif;
 
-    walletInstance = fromWIF(wif, network.chain);
+      walletInstance = fromWIF(wif, network.chain);
 
-    return fetchUtxos(walletInstance.address, network.explorer)
-  }).then((utxos: Array<any>) => {
-    // Add inputs and putputs to psbt 
+      return fetchUtxos(walletInstance.address, network.explorer);
+    })
+    .then((utxos: Array<any>) => {
+      // Add inputs and putputs to psbt
 
-    const unsignedPsbt = walletInstance.updateTx(
-      psbtBase64,
-      utxos,
-      json.amount_r,
-      json.amount_p,
-      json.asset_r,
-      json.asset_p
-    );
+      const unsignedPsbt = walletInstance.updateTx(
+        psbtBase64,
+        utxos,
+        json.amount_r,
+        json.amount_p,
+        json.asset_r,
+        json.asset_p
+      );
 
-    const body = { psbt: unsignedPsbt };
-    const options = { headers: { "Content-Type": "application/json", "Api-Key": "VULPEM_FREE" } };
-    
-    return axios.post(`${(TAXI_API_URL as any)[network.chain]}/topup`, body, options)
-  }).then((taxiResponse: any) => {
+      const body = { psbt: unsignedPsbt };
+      const options = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Key': 'VULPEM_FREE',
+        },
+      };
 
-    const psbtWithFees = taxiResponse.data.data.signedTx;
+      return axios.post(
+        `${(TAXI_API_URL as any)[network.chain]}/topup`,
+        body,
+        options
+      );
+    })
+    .then((taxiResponse: any) => {
+      const psbtWithFees = taxiResponse.data.data.signedTx;
 
-    log("\nSigning with private key...");
+      log('\nSigning with private key...');
 
-    return walletInstance.sign(psbtWithFees);
-  }).then((signedPsbt: string) => {
-    success("\n√ Done\n");
+      return walletInstance.sign(psbtWithFees);
+    })
+    .then((signedPsbt: string) => {
+      success('\n√ Done\n');
 
-    const TradeReply = {
-      SwapAccept: {
-        id: makeid(8),
-        request_id: json.id,
-        transaction: signedPsbt
-      }
-    };
+      //eslint-disable-next-line
+      const TradeReply = {
+        SwapAccept: {
+          id: makeid(8),
+          requestId: json.id,
+          transaction: signedPsbt,
+        },
+      };
 
-    success(`\nSwapAccept message\n\n${JSON.stringify(TradeReply.SwapAccept)}`);
-  }).catch(error)
+      success(
+        `\nSwapAccept message\n\n${JSON.stringify(TradeReply.SwapAccept)}`
+      );
+    })
+    .catch(error);
 }

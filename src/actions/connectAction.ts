@@ -1,11 +1,9 @@
+import { TraderClient } from 'tdex-sdk';
+// Helpers
 import { info, log, error } from '../logger';
-//Helpers
-import { isValidUrl } from '../helpers';
-
+import { isValidUrl, tickersFromMarkets } from '../helpers';
+// State
 import State from '../state';
-import { networks } from 'liquidjs-lib';
-
-const markets = require("../markets.example.json")
 const state = new State();
 
 export default function (endpoint: string): void {
@@ -14,20 +12,23 @@ export default function (endpoint: string): void {
   if (!isValidUrl(endpoint))
     return error('The provided endpoint URL is not valid');
 
-  // TODO: Connect to provided endpoint and fetch the available pairs
-  // client.Markets().then()
+  const client = new TraderClient(endpoint);
+  client
+    .markets()
+    .then((markets) => {
+      const marketsByTicker = tickersFromMarkets(markets);
+      const pairs = Object.keys(marketsByTicker);
 
+      state.set({
+        provider: {
+          endpoint,
+          pairs,
+          markets: marketsByTicker,
+          selected: true,
+        },
+      });
 
-  const pairs = Object.keys(markets)
-
-  state.set({
-    provider: {
-      endpoint,
-      pairs,
-      markets,
-      selected: true
-    }
-  });
-
-  return log(`Current provider endpoint: ${endpoint}`)
+      return log(`Current provider endpoint: ${endpoint}`);
+    })
+    .catch(error);
 }

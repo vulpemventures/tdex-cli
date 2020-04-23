@@ -80,6 +80,13 @@ export default function (cmdObj: any) {
         toReceive = tickerA;
       }
 
+      const isBuyType: boolean =
+        market.assets.baseAsset.substring(0, 4) === toReceive;
+
+      if (isBuyType) {
+        throw new Error('Buy type not supported yet');
+      }
+
       return amount(`How much do you want to send?`).run();
     })
     .then((inputAmount: number) => {
@@ -149,18 +156,16 @@ export default function (cmdObj: any) {
           ? decrypt(wallet.keystore.value, passwordOrWif)
           : passwordOrWif;
 
-      log(`\nSending Swap request to provider...\n`);
+      log(`\nSending Trade proposal to provider...`);
       log('Signing with private key...');
-      log('Sending SwapComplete to provider...\n');
 
       const params = {
         market: market.assets,
-        amount: previewInSatoshis.amountToReceive,
+        amount: previewInSatoshis.amountToBeSent,
         privateKey: wif,
       };
 
-      const isBuyType: boolean = market.assets.baseAsset.includes(toReceive);
-      return isBuyType ? trade.buy(params) : trade.sell(params);
+      return trade.sell(params);
     })
     .then((txid: string) => {
       success('Trade completed!\n');

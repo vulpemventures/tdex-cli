@@ -2437,6 +2437,11 @@ js-yaml@3.13.1, js-yaml@^3.13.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+jsbi@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/jsbi/-/jsbi-3.1.2.tgz#7502ed36fb2b32bb37efb3d2d0b3806a0d771780"
+  integrity sha512-5nDXo1X9QVaXK/Cpb5VECV9ss1QPbjUuk1qSruHB1PK/g39Sd414K4nci99ElFDZv0vzxDEnKn3o49/Tn9Yagw==
+
 json-buffer@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
@@ -2507,7 +2512,7 @@ levn@^0.3.0, levn@~0.3.0:
 
 liquidjs-lib@vulpemventures/liquidjs-lib:
   version "5.1.6"
-  resolved "git+ssh://git@github.com/vulpemventures/liquidjs-lib.git#649f68902ae4cc225a8f0331d7e25d872bf79eca"
+  resolved "git+ssh://git@github.com/vulpemventures/liquidjs-lib.git#97673986c4233dee61f98dc59b5256ed2a8f313d"
   dependencies:
     axios "^0.19.2"
     bech32 "^1.1.2"
@@ -2680,9 +2685,9 @@ micromatch@^3.1.10:
     to-regex "^3.0.2"
 
 mime-db@^1.28.0:
-  version "1.43.0"
-  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.43.0.tgz#0a12e0502650e473d735535050e7c8f4eb4fae58"
-  integrity sha512-+5dsGEEovYbT8UY9yD7eE4XTc4UwJ1jBYlgaQQF38ENsKR3wj/8q8RFZrF9WIZpB2V1ArTVFUva8sAul1NzRzQ==
+  version "1.44.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.44.0.tgz#fa11c5eb0aca1334b4233cb4d52f10c5a6272f92"
+  integrity sha512-/NOTfLrsPBVeH7YtFPgsVWveuL+4SjjYxaQ1xtM1KMFj7HdxlBlxeyNLzhyJVx7r4rZGJAZ/6lkKCitSc/Nmpg==
 
 mimic-fn@^1.0.0:
   version "1.2.0"
@@ -2886,7 +2891,7 @@ node-environment-flags@1.0.6:
     object.getownpropertydescriptors "^2.0.3"
     semver "^5.7.0"
 
-node-pre-gyp@^0.14.0:
+node-pre-gyp@*, node-pre-gyp@^0.14.0:
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/node-pre-gyp/-/node-pre-gyp-0.14.0.tgz#9a0596533b877289bcad4e143982ca3d904ddc83"
   integrity sha512-+CvDC7ZttU/sSt9rFjix/P05iS43qHCOOGzcr3Ry99bXG7VX953+vFyEuph/tfqoYu8dttBkE86JSKBO2OzcxA==
@@ -3500,9 +3505,9 @@ resolve-url@^0.2.1:
   integrity sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
 
 resolve@^1.1.7:
-  version "1.16.1"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.16.1.tgz#49fac5d8bacf1fd53f200fa51247ae736175832c"
-  integrity sha512-rmAglCSqWWMrrBv/XM6sW0NuRFiKViw/W4d9EbC4pt+49H8JwHy+mcGmALTEg504AUDcLTvb1T2q3E9AnmY+ig==
+  version "1.17.0"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.17.0.tgz#b25941b54968231cc2d1bb76a79cb7f2c0bf8444"
+  integrity sha512-ic+7JYiV8Vi2yzQGFWOkiZD5Z9z7O2Zhm9XMaTxdJExKasieFCr+yXZ/WmXsckHiKl12ar0y6XiXDx3m4RHn1w==
   dependencies:
     path-parse "^1.0.6"
 
@@ -3987,10 +3992,11 @@ tdex-protobuf@sevenlab/tdex-protobuf:
 
 tdex-sdk@sevenlab/tdex-sdk:
   version "0.1.0"
-  resolved "git+ssh://git@github.com/sevenlab/tdex-sdk.git#65e3e3a7e63d42f5c6cb2780a0612a62e074f865"
+  resolved "git+ssh://git@github.com/sevenlab/tdex-sdk.git#5044d8c1679f251b550c7d3946f621721989003a"
   dependencies:
     axios "^0.19.2"
     grpc "^1.24.2"
+    jsbi "^3.1.2"
     liquidjs-lib vulpemventures/liquidjs-lib
     tdex-protobuf sevenlab/tdex-protobuf
 

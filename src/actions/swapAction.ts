@@ -100,17 +100,18 @@ export default function (cmdObj: any) {
 
       const execute = cmdObj.local
         ? () => Promise.resolve()
-        : () => trade.preview(market.assets, tradeType, amountToBeSent);
+        : () =>
+            trade.preview(market.assets, tradeType, toSatoshi(amountToBeSent));
 
       return execute();
     })
     .then((previewOrNothing: any) => {
       previewInSatoshis = previewOrNothing;
-      if (!cmdObj.local)
-        amountToReceive = fromSatoshi(previewInSatoshis.amountToReceive);
 
       log(
-        `Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive ${toReceive} ${amountToReceive}`
+        `Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive ${toReceive} ${fromSatoshi(
+          previewInSatoshis.amountToReceive
+        )}`
       );
 
       return confirm.run();
@@ -154,8 +155,7 @@ export default function (cmdObj: any) {
 
       const params = {
         market: market.assets,
-        amount: amountToBeSent,
-        address: wallet.address,
+        amount: previewInSatoshis.amountToReceive,
         privateKey: wif,
       };
 

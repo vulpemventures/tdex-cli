@@ -8,7 +8,9 @@ const state = new State();
 export default function (): void {
   info('=========*** Market ***==========\n');
 
-  const { provider, market } = state.get();
+  const { provider, market, network } = state.get();
+
+  if (!network.selected) return error('Select a valid network');
 
   if (!provider.selected)
     return error(
@@ -18,8 +20,8 @@ export default function (): void {
   const client = new TraderClient(provider.endpoint);
   client
     .markets()
-    .then((markets) => {
-      const marketsByTicker = tickersFromMarkets(markets);
+    .then((markets) => tickersFromMarkets(markets, network.explorer))
+    .then((marketsByTicker) => {
       const pairs = Object.keys(marketsByTicker);
 
       state.set({

@@ -32,6 +32,7 @@
     "enquirer": "^2.3.4",
     "google-protobuf": "^3.11.4",
     "liquidjs-lib": "vulpemventures/liquidjs-lib",
+    "tdex-protobuf": "sevenlab/tdex-protobuf",
     "tdex-sdk": "sevenlab/tdex-sdk"
   },
   "devDependencies": {
@@ -47,6 +48,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
+    "husky": "^4.2.5",
     "mocha": "^7.1.1",
     "nexe": "^3.3.2",
     "prettier": "^2.0.5",
@@ -58,5 +60,10 @@
     "semi": true,
     "singleQuote": true,
     "trailingComma": "es5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint"
+    }
   }
 }

@@ -5,6 +5,9 @@ import * as grpc from 'grpc';
 
 import * as services from 'tdex-protobuf/js/operator_grpc_pb';
 import * as messages from 'tdex-protobuf/js/operator_pb';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as PathModule from 'path';
 
 export const NETWORKS = {
   liquid: 'https://blockstream.info/liquid/api',
@@ -57,22 +60,11 @@ export async function tickersFromMarkets(
     const quoteAssetTicker = ticker || quoteAsset.substring(0, previewLength);
     const pair = `${baseAssetTicker}-${quoteAssetTicker}`;
     marketsByTicker[pair] = {
-      [baseAssetTicker]: baseAsset,
-      [quoteAssetTicker]: quoteAsset,
+      [baseAsset]: baseAssetTicker,
+      [quoteAsset]: quoteAssetTicker,
     };
   }
   return marketsByTicker;
-}
-
-export function makeid(length: number): string {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
 }
 
 export function isValidUrl(s) {
@@ -159,5 +151,39 @@ export class OperatorClient {
         }
       );
     });
+  }
+}
+
+export function readBinary(path: string): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    let out: Uint8Array = new Uint8Array();
+    const stream = fs.createReadStream(path);
+    stream.on('data', (chunk) => (out = Buffer.concat([out, chunk])));
+    stream.on('close', () => resolve(out));
+    stream.on('error', reject);
+  });
+}
+
+export function writeBinary(path: string, data: Uint8Array): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      const stream = fs.createWriteStream(path);
+      stream.write(data);
+      stream.end();
+      resolve();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export function fileExists(path: string): boolean {
+  try {
+    if (fs.existsSync(path)) {
+      return true;
+    }
+    return false;
+  } catch (ignore) {
+    return false;
   }
 }

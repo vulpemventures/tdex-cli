@@ -1,10 +1,9 @@
-import { Trade, TradeType, Swap } from 'tdex-sdk';
+import { Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
 import State from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
-import { createTx } from '../wallet';
 
 const state = new State();
 //eslint-disable-next-line
@@ -17,14 +16,14 @@ const { Toggle, NumberPrompt, Confirm, Password } = require('enquirer');
 // 5. Sign the final psbt
 // 6. Send SwapComplete back
 
-export default function (cmdObj: any) {
-  info('=========*** Swap ***==========\n');
+export default function () {
+  info('=========*** Trade ***==========\n');
 
   const { wallet, provider, market, network } = state.get();
 
   if (!network.selected) return error('Select a valid network first');
 
-  if (!cmdObj.local && !provider.selected)
+  if (!provider.selected)
     return error(
       'A provider is required. Select one with connect <endpoint> command'
     );
@@ -42,11 +41,12 @@ export default function (cmdObj: any) {
   };
   const trade = new Trade(init);
 
-  const [tickerA, tickerB] = Object.keys(market.tickers);
   const toggle = new Toggle({
-    message: 'Which asset do you want to send?',
-    enabled: tickerA,
-    disabled: tickerB,
+    message: `Do you want to buy or sell ${
+      market.tickers[market.assets.baseAsset]
+    }?`,
+    enabled: 'BUY',
+    disabled: 'SELL',
   });
   const amount = (message: string) =>
     new NumberPrompt({
@@ -67,57 +67,52 @@ export default function (cmdObj: any) {
     toReceive: string,
     amountToBeSent: number,
     amountToReceive: number,
-    previewInSatoshis: any;
+    isBuyType: boolean;
 
   toggle
     .run()
-    .then((isTickerA: boolean) => {
-      if (isTickerA) {
-        toBeSent = tickerA;
-        toReceive = tickerB;
-      } else {
-        toBeSent = tickerB;
-        toReceive = tickerA;
-      }
-
-      const isBuyType: boolean =
-        market.assets.baseAsset.substring(0, 4) === toReceive;
-
+    .then((_isBuyType: boolean) => {
+      isBuyType = _isBuyType;
+      const { baseAsset, quoteAsset } = market.assets;
       if (isBuyType) {
-        throw new Error('Buy type not supported yet');
+        toBeSent = quoteAsset;
+        toReceive = baseAsset;
+      } else {
+        toBeSent = baseAsset;
+        toReceive = quoteAsset;
       }
 
-      return amount(`How much do you want to send?`).run();
+      return amount(
+        `How much do you want to ${isBuyType ? 'buy' : 'sell'}?`
+      ).run();
     })
     .then((inputAmount: number) => {
-      amountToBeSent = inputAmount;
-
-      const execute = cmdObj.local
-        ? () => amount(`How much do you want to receive?`).run()
-        : () => Promise.resolve();
-
-      return execute();
+      if (isBuyType) {
+        amountToReceive = toSatoshi(inputAmount);
+      } else {
+        amountToBeSent = toSatoshi(inputAmount);
+      }
+      return Promise.resolve();
     })
-    .then((outputAmountOrNothing: number) => {
+    .then(() => {
       // Fetch market rate from daemon and calulcate prices for each ticker
-      const isBuyType = market.assets.baseAsset.includes(toReceive);
       const tradeType = isBuyType ? TradeType.BUY : TradeType.SELL;
+      const amount = isBuyType ? amountToReceive : amountToBeSent;
 
-      amountToReceive = cmdObj.local && outputAmountOrNothing;
-
-      const execute = cmdObj.local
-        ? () => Promise.resolve()
-        : () =>
-            trade.preview(market.assets, tradeType, toSatoshi(amountToBeSent));
-
-      return execute();
+      return trade.preview(market.assets, tradeType, amount);
     })
-    .then((previewOrNothing: any) => {
-      previewInSatoshis = previewOrNothing;
+    .then((preview: any) => {
+      if (isBuyType) {
+        amountToBeSent = preview.amountToBeSent;
+      } else {
+        amountToReceive = preview.amountToReceive;
+      }
 
       log(
-        `Gotcha! You will send ${toBeSent} ${amountToBeSent} and receive ${toReceive} ${fromSatoshi(
-          previewInSatoshis.amountToReceive
+        `Gotcha! You will send ${market.tickers[toBeSent]} ${fromSatoshi(
+          amountToBeSent
+        )} and receive ${market.tickers[toReceive]} ${fromSatoshi(
+          amountToReceive
         )}`
       );
 
@@ -125,23 +120,6 @@ export default function (cmdObj: any) {
     })
     .then((keepGoing: boolean) => {
       if (!keepGoing) throw 'Canceled';
-
-      if (cmdObj.local) {
-        const swap = new Swap();
-        const psbtBase64 = createTx();
-        const swapRequest = swap.request({
-          assetToBeSent: toBeSent,
-          amountToBeSent: toSatoshi(amountToBeSent),
-          assetToReceive: toReceive,
-          amountToReceive: toSatoshi(amountToReceive),
-          psbtBase64,
-        });
-        const json = Swap.parse({
-          message: swapRequest,
-          type: 'SwapRequest',
-        });
-        return success(`\nSwapRequest message\n\n${json}`);
-      }
 
       const execute =
         wallet.keystore.type === 'encrypted'
@@ -161,11 +139,14 @@ export default function (cmdObj: any) {
 
       const params = {
         market: market.assets,
-        amount: previewInSatoshis.amountToBeSent,
+        amount: isBuyType ? amountToReceive : amountToBeSent,
         privateKey: wif,
       };
 
-      return trade.sell(params);
+      const execute = isBuyType
+        ? () => trade.buy(params)
+        : () => trade.sell(params);
+      return execute();
     })
     .then((txid: string) => {
       success('Trade completed!\n');

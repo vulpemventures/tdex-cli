@@ -8,9 +8,11 @@ import marketPriceAction from './marketPriceAction';
 import walletAction from './walletAction';
 import walletBalanceAction from './walletBalanceAction';
 
-import swapAction from './swapAction';
+import swapRequestAction from './swapRequestAction';
 import swapAcceptAction from './swapAcceptAction';
 import swapCompleteAction from './swapCompleteAction';
+
+import tradeAction from './tradeAction';
 
 export {
   connectAction,
@@ -21,7 +23,8 @@ export {
   marketListAction,
   walletAction,
   walletBalanceAction,
-  swapAction,
+  swapRequestAction,
   swapAcceptAction,
   swapCompleteAction,
+  tradeAction,
 };

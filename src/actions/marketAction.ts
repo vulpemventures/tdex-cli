@@ -1,7 +1,7 @@
 import { info, log, error } from '../logger';
 
 import State from '../state';
-import { networks } from 'liquidjs-lib';
+import { networks } from 'tdex-sdk';
 const state = new State();
 
 export default function (pair: string): void {
@@ -21,7 +21,7 @@ export default function (pair: string): void {
 
   const LBTC = (networks as any)[network.chain].assetHash;
   const tickers = (provider.markets as any)[pair];
-  const hashes = Object.values(tickers);
+  const hashes = Object.keys(tickers);
   const baseAsset = hashes.find((h) => h === LBTC);
   const quoteAsset = hashes.find((h) => h !== LBTC);
   const assets = { baseAsset, quoteAsset };

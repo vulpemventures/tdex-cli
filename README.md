@@ -53,7 +53,7 @@ $ tdex-cli info
 * Connect to a liquidity provider
 
 ```sh
-$ tdex-cli connect https://tdex.vulpem.com
+$ tdex-cli connect https://provider.vulpem.com:9945
 ```
 
 ### Market
@@ -104,25 +104,17 @@ $ tdex-cli wallet balance
 
 * Create a swap request message
 
-> NOTICE With the —-output flag you can customize the output file
-> NOTICE With the —-print flag you can print the request in JSON format to stdout
 
 ```sh
 $ tdex-cli swap request
 =========*** Swap ***==========
 
-✔ Which asset do you want to send? › USDT / LBTC
-✔ How much do you want to send? · 0.5
-✔ How much do you want to receive? · 3000
-Gotcha! You will send LBTC 0.5 and receive USDT 3000
-✔ Are you sure continue? (y/N) · true
-SwapRequest message saved into ./swap_request.bin
+? Please provide the assets (move with up/down arrow and then Enter)  
+⊙  Which asset do you want to send? :  
+⊙  Which asset do you want to receive? : …
 ```
 
 * Import manually a SwapRequest and sign a resulting SwapAccept message
-
-> NOTICE With the —-file flag you can customize the input file
-> NOTICE With the —-output flag you can customize the output file
 
 ```sh
 $ cd path/to/swap_request.bin

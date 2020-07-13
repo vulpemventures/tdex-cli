@@ -1,6 +1,6 @@
 {
   "name": "tdex-cli",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "contributors": [
     {
       "name": "Marco Argentieri",
@@ -30,7 +30,7 @@
     "commander": "^5.0.0",
     "enquirer": "^2.3.4",
     "tdex-protobuf": "tdex-network/tdex-protobuf",
-    "tdex-sdk": "^0.0.1"
+    "tdex-sdk": "^0.0.2"
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",

@@ -2028,6 +2028,11 @@ growl@1.10.5:
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.5.tgz#f2735dc2283674fa67478b10181059355c369e5e"
   integrity sha512-qBr4OuELkhPenW6goKVXiv47US3clb3/IbuWF9KNKEijAy9oeHxU9IgzjvJhHkUzhaj7rOUD7+YGWqUjLp5oSA==
 
+grpc-web@~1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/grpc-web/-/grpc-web-1.2.0.tgz#96402a1245ea834fedb1dd5a80f910476ddbbb1c"
+  integrity sha512-QS0RF+xiWnMEiHWyA0A0I8JYYJLOiF/DGEpRQ7vJDOzEZYfmNqI7d7d29sYBbNfTi+arVh2JpeGIX7ch24a+tA==
+
 gtoken@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/gtoken/-/gtoken-5.0.1.tgz#b93f309d89adfe230bb0f24269b978284ba89e0f"
@@ -4074,10 +4079,16 @@ tdex-protobuf@tdex-network/tdex-protobuf:
   version "1.0.0"
   resolved "https://codeload.github.com/tdex-network/tdex-protobuf/tar.gz/02fd034f3c02a64f8859afe690e1205a69032816"
 
-tdex-sdk@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-0.0.2.tgz#051ec247b65e8ee2ce01c1842aa627de96cd4825"
-  integrity sha512-nFTcj/2+v970Ty83c3UXxGBbdLony/2big0WIFZtrYgUwcykCpi2DUYt5IsEAPEsdzvpyADHrsAarC7ZhCnzIw==
+tdex-protobuf@tdex-network/tdex-protobuf#master:
+  version "1.0.0"
+  resolved "https://codeload.github.com/tdex-network/tdex-protobuf/tar.gz/1d7548f4a8a7db0a1b4c53a9e2e368c5bc79048f"
+  dependencies:
+    grpc-web "~1.2.0"
+
+tdex-sdk@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-0.1.0.tgz#576b93c3e362f80783b4bd30e8a3e6537a405318"
+  integrity sha512-Nour3aMIFoboEKFe/3T5nkcIwNd1hDPguQ3+jrfbh522JuzJ0Qh3m6EDq2VA+PM+UFNeAgrp/0hPVdZxV5zbfA==
   dependencies:
     "@grpc/grpc-js" "^1.0.4"
     "@types/google-protobuf" "^3.7.2"
@@ -4085,7 +4096,7 @@ tdex-sdk@^0.0.2:
     google-protobuf "^3.11.4"
     jsbi "^3.1.2"
     liquidjs-lib provable-things/liquidjs-lib
-    tdex-protobuf tdex-network/tdex-protobuf
+    tdex-protobuf tdex-network/tdex-protobuf#master
     tslib "^2.0.0"
 
 text-table@^0.2.0:

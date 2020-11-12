@@ -1,5 +1,5 @@
 # 💻 tdex-cli
-[Vulpem Ventures](https://vulpem.com) fork of the TDex CLI for making trades against TDex Beta Daemons
+Non-custodial Liquid Wallet CLI to make trades on TDex Network via atomic swaps 
 
 
 ## Development

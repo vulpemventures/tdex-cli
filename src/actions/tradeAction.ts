@@ -1,4 +1,4 @@
-import { Trade, TradeType } from 'tdex-sdk';
+import { IdentityType, Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
 import State from '../state';
@@ -35,9 +35,16 @@ export default function () {
     return error('A wallet is required. Create or restore with wallet command');
 
   const init = {
-    chain: network.chain,
     providerUrl: provider.endpoint,
     explorerUrl: network.explorer,
+    identity: {
+      chain: network.chain,
+      type: IdentityType.PrivateKey,
+      value: {
+        signingKeyWIF: '',
+        blindingKeyWIF: '',
+      },
+    },
   };
   const trade = new Trade(init);
 

@@ -3,7 +3,7 @@ import { TraderClient } from 'tdex-sdk';
 import { info, log, success, error } from '../logger';
 import { isValidUrl, tickersFromMarkets } from '../helpers';
 // State
-import State from '../state';
+import State, { initialState } from '../state';
 const state = new State();
 
 export default function (endpoint: string): void {
@@ -32,6 +32,7 @@ export default function (endpoint: string): void {
           markets: marketsByTicker,
           selected: true,
         },
+        market: initialState.market,
       });
 
       success(`Connection to the given provider has been successful!`);

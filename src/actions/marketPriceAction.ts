@@ -1,4 +1,4 @@
-import { TraderClient } from 'tdex-sdk';
+import { TraderClient, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
 import State from '../state';
@@ -19,30 +19,42 @@ export default function (): void {
 
   log(`Current market: ${market.pair}\n`);
 
-  // client.Balances(market.pair).then()
   const client = new TraderClient(provider.endpoint);
   const { baseAsset, quoteAsset } = market.assets;
   client
-    .balances({
-      baseAsset,
-      quoteAsset,
-    })
-    .then((balancesAndFee: any) => {
-      const { balances, fee } = balancesAndFee;
-      info(`Liquidity provider fee : ${fee}%\n`);
-      const [
-        [firstAsset, firstBalance],
-        [secondAsset, secondBalance],
-      ] = Object.entries(balances);
+    .marketPrice(
+      {
+        baseAsset,
+        quoteAsset,
+      },
+      TradeType.BUY,
+      1
+    )
+    .then((prices: any[]) => {
+      const [first] = prices;
 
-      const price: string = (
-        (secondBalance as number) / (firstBalance as number)
-      ).toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 8,
-      });
+      info(`Swap fee %: ${first.fee.basisPoint}%\n`);
+      info(`Swap fee asset: ${first.fee.asset}%\n`);
+
+      const { quotePrice, basePrice } = first.price;
+
       success(
-        `1 ${market.tickers[firstAsset]} is equal to ${price} ${market.tickers[secondAsset]}`
+        `1 ${market.tickers[baseAsset]} is equal to ${quotePrice.toLocaleString(
+          'en-US',
+          {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 8,
+          }
+        )} ${market.tickers[quoteAsset]}`
+      );
+      success(
+        `1 ${market.tickers[quoteAsset]} is equal to ${basePrice.toLocaleString(
+          'en-US',
+          {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 8,
+          }
+        )} ${market.tickers[baseAsset]}`
       );
     })
     .catch(error);

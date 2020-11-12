@@ -39,7 +39,7 @@ export interface StateNetworkInterface {
   explorer: string;
 }
 
-const initialState = {
+export const initialState = {
   network: {
     selected: false,
     chain: '',

@@ -1,9 +1,6 @@
 # 💻 tdex-cli
-Wallet CLI for making swaps on TDEX
+[Vulpem Ventures](https://vulpem.com) fork of the TDex CLI for making trades against TDex Beta Daemons
 
-## Usage
-
-In-depth documentation for using the `tdex-cli` is available at [docs.tdex.network](https://docs.tdex.network/tdex-cli.html)
 
 ## Development
 

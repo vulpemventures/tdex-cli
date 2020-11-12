@@ -99,7 +99,7 @@ export default function () {
       const tradeType = isBuyType ? TradeType.BUY : TradeType.SELL;
       const amount = isBuyType ? amountToReceive : amountToBeSent;
 
-      return trade.preview(market.assets, tradeType, amount);
+      return trade.preview({ market: market.assets, tradeType, amount });
     })
     .then((preview: any) => {
       if (isBuyType) {

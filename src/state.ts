@@ -16,7 +16,6 @@ export interface StateObjectInterface {
   provider: StateProviderInterface;
   market: StateMarketInterface;
   wallet: any;
-  operator: any;
 }
 
 export interface StateProviderInterface {
@@ -61,19 +60,12 @@ const initialState = {
   },
   wallet: {
     selected: false,
-    pubkey: '',
     address: '',
-    script: '',
+    blindingKey: '',
     keystore: {
       type: '',
-      value: '',
+      value: {},
     },
-  },
-  operator: {
-    selected: false,
-    endpoint: '',
-    fees: [],
-    markets: [],
   },
 };
 
@@ -92,7 +84,7 @@ export default class State implements StateInterface {
     } else {
       //Default absolute position
       const homedir = os.homedir();
-      const defaultPath = PathModule.resolve(homedir, '.tdex');
+      const defaultPath = PathModule.resolve(homedir, '.tdex-cli');
       if (!fs.existsSync(defaultPath)) {
         fs.mkdirSync(defaultPath);
       }

@@ -15,27 +15,29 @@ export default function (): void {
     );
 
   //Get balance with the explorer
-  fetchBalances(wallet.address, network.explorer).then((balances) => {
-    const entries = Object.entries(balances);
+  fetchBalances(wallet.address, wallet.blindingKey, network.explorer).then(
+    (balances) => {
+      const entries = Object.entries(balances);
 
-    if (entries.length === 0) return log('No transactions found.');
+      if (entries.length === 0) return log('No transactions found.');
 
-    const promises = entries.map(([asset, balance]) => {
-      return fetchTicker(asset, network.chain, network.explorer)
-        .then((response) => {
-          const ticker = response || 'Unknown';
-          success(`*** ${ticker} ***`);
-          return;
-        })
-        .catch(() => {
-          success(`*** Unknown ***`);
-        })
-        .finally(() => {
-          log(`Balance ${balance} satoshis `);
-          log(`Hash ${asset}`);
-          log();
-        });
-    });
-    Promise.all(promises);
-  });
+      const promises = entries.map(([asset, balance]) => {
+        return fetchTicker(asset, network.chain, network.explorer)
+          .then((response) => {
+            const ticker = response || 'Unknown';
+            success(`*** ${ticker} ***`);
+            return;
+          })
+          .catch(() => {
+            success(`*** Unknown ***`);
+          })
+          .finally(() => {
+            log(`Balance ${balance} satoshis `);
+            log(`Hash ${asset}`);
+            log();
+          });
+      });
+      Promise.all(promises);
+    }
+  );
 }

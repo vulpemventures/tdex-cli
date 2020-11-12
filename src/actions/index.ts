@@ -8,10 +8,6 @@ import marketPriceAction from './marketPriceAction';
 import walletAction from './walletAction';
 import walletBalanceAction from './walletBalanceAction';
 
-import swapRequestAction from './swapRequestAction';
-import swapAcceptAction from './swapAcceptAction';
-import swapCompleteAction from './swapCompleteAction';
-
 import tradeAction from './tradeAction';
 
 export {
@@ -23,8 +19,5 @@ export {
   marketListAction,
   walletAction,
   walletBalanceAction,
-  swapRequestAction,
-  swapAcceptAction,
-  swapCompleteAction,
   tradeAction,
 };

@@ -1,5 +1,7 @@
 import { info, log, error, success } from '../logger';
-import { Wallet, WalletInterface } from 'tdex-sdk';
+
+import { ECPair } from 'liquidjs-lib';
+import { networks, IdentityType, PrivateKey, IdentityOpts } from 'tdex-sdk';
 import { encrypt } from '../crypto';
 //eslint-disable-next-line
 const enquirer = require('enquirer');
@@ -8,22 +10,24 @@ import State from '../state';
 const state = new State();
 
 function setWalletState(
-  walletObject: WalletInterface,
-  type: string,
-  value: string
+  identityOpts: IdentityOpts,
+  storageType: string,
+  signKey: string,
+  blindKey: string
 ): void {
-  const pubkey = walletObject.publicKey;
-  const address = walletObject.address;
-  const script = walletObject.script;
+  const identity = new PrivateKey(identityOpts);
+  const address = identity.getNextAddress().confidentialAddress;
   state.set({
     wallet: {
       selected: true,
-      pubkey,
       address,
-      script,
+      blindingKey: blindKey, //blinding private key
       keystore: {
-        type,
-        value,
+        type: storageType,
+        value: {
+          signingKey: signKey,
+          blindingKey: blindKey,
+        },
       },
     },
   });
@@ -41,8 +45,7 @@ export default function (): void {
 
   if (!network.selected) return error('Select a valid network');
 
-  if (wallet.selected)
-    return log(`Public key ${wallet.pubkey}\nAddress ${wallet.address}`);
+  if (wallet.selected) return log(`Address ${wallet.address}`);
 
   const restore = new enquirer.Toggle({
     message: 'Want to restore from WIF (Wallet Import Format)?',
@@ -56,8 +59,8 @@ export default function (): void {
     message:
       'A new wallet will be created. How do you want to store your private key? 🔑',
     choices: [
-      { name: 'encrypted', message: 'Encrypted (AES-128-CBC)' }, //<= choice object
-      { name: 'plain', message: 'Plain Text (not recommended)' }, //<= choice object
+      { name: 'encrypted', message: 'Encrypted (AES-128-CBC)' },
+      { name: 'plain', message: 'Plain Text (not recommended)' },
     ],
   });
 
@@ -73,55 +76,75 @@ export default function (): void {
     message: 'Type your private key WIF (Wallet Import Format)',
   });
 
+  const blindingkey = new enquirer.Password({
+    type: 'password',
+    name: 'key',
+    message: 'Type your BLINDING private key WIF (Wallet Import Format)',
+  });
+
   restore.run().then((restoreFromWif: boolean) => {
     if (!restoreFromWif) {
-      const walletFromScratch: WalletInterface = Wallet.fromRandom(
-        network.chain
-      );
+      const signingKeyWIF = ECPair.makeRandom({
+        network: (networks as any)[network.chain],
+      }).toWIF();
+      const blindingKeyWIF = ECPair.makeRandom({
+        network: (networks as any)[network.chain],
+      }).toWIF();
+
+      const identity = {
+        chain: network.chain,
+        type: IdentityType.PrivateKey,
+        value: {
+          signingKeyWIF,
+          blindingKeyWIF,
+        },
+      };
+
       type.run().then((storageType: string) => {
         if (storageType === 'encrypted')
           password
             .run()
             .then((password: string) => {
               setWalletState(
-                walletFromScratch,
+                identity,
                 storageType,
-                encrypt(walletFromScratch.keyPair.toWIF(), password)
+                encrypt(signingKeyWIF, password),
+                encrypt(blindingKeyWIF, password)
               );
             })
             .catch(error);
         else
-          setWalletState(
-            walletFromScratch,
-            storageType,
-            walletFromScratch.keyPair.toWIF()
-          );
+          setWalletState(identity, storageType, signingKeyWIF, blindingKeyWIF);
       });
     } else {
-      privatekey.run().then((wif: string) => {
-        const restoredWallet: WalletInterface = Wallet.fromWIF(
-          wif,
-          network.chain
-        );
+      privatekey.run().then((signWif: string) => {
+        const restoredIdentity = {
+          chain: network.chain,
+          type: IdentityType.PrivateKey,
+          value: {
+            signingKeyWIF: signWif,
+            blindingKeyWIF: '',
+          },
+        };
 
-        type.run().then((storageType: string) => {
-          if (storageType === 'encrypted')
-            password
-              .run()
-              .then((password: string) => {
-                setWalletState(
-                  restoredWallet,
-                  storageType,
-                  encrypt(wif, password)
-                );
-              })
-              .catch(error);
-          else
-            setWalletState(
-              restoredWallet,
-              storageType,
-              restoredWallet.keyPair.toWIF()
-            );
+        blindingkey.run().then((blindWif: string) => {
+          restoredIdentity.value.blindingKeyWIF = blindWif;
+          type.run().then((storageType: string) => {
+            if (storageType === 'encrypted')
+              password
+                .run()
+                .then((password: string) => {
+                  setWalletState(
+                    restoredIdentity,
+                    storageType,
+                    encrypt(signWif, password),
+                    encrypt(blindWif, password)
+                  );
+                })
+                .catch(error);
+            else
+              setWalletState(restoredIdentity, storageType, signWif, blindWif);
+          });
         });
       });
     }

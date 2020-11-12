@@ -18,15 +18,9 @@ import {
   connectAction,
   marketPriceAction,
   walletBalanceAction,
-  swapRequestAction,
-  swapAcceptAction,
-  swapCompleteAction,
   tradeAction,
 } from './actions';
-import {
-  operatorConnectAction,
-  operatorDepositAction,
-} from './operatorActions';
+
 import { NETWORKS } from './helpers';
 //eslint-disable-next-line
 const pkg = require('../package.json');
@@ -57,7 +51,7 @@ program
  */
 program
   .command('connect <endpoint>')
-  .description('Select the liquidity provider')
+  .description('Connect to the liquidity provider')
   .action(connectAction);
 
 /**
@@ -94,72 +88,11 @@ wallet
   .action(walletBalanceAction);
 
 /**
- * swap
- */
-const swap = program.command('swap').description('Interact with swap messages');
-
-swap
-  .command('request')
-  .option('-p, --print', 'Print to stdout', false)
-  .option(
-    '-o, --output <file>',
-    'Set a diffent path where to save SwapRequest file (defaults to current directory)'
-  )
-  .description('Make a swap proposal')
-  .action(swapRequestAction);
-
-swap
-  .command('accept')
-  .option(
-    '-f, --file <file>',
-    'Set a different path where to get SwapRequest file'
-  )
-  .option('-p, --print', 'Print to stdout', false)
-  .option(
-    '-o, --output <file>',
-    'Set a diffent path where to save SwapAccept file (defaults to the same folder of SwapRequest file)'
-  )
-  .description('Parse and accept a given SwapRequest message')
-  .action(swapAcceptAction);
-
-swap
-  .command('complete')
-  .option(
-    '-f, --file <file>',
-    'Set a different path where to get SwapAccept file'
-  )
-  .option('-p, --push', 'Extract hex string and broadcast to the chain')
-  .option(
-    '-o, --output <file>',
-    'Set a diffent path where to save SwapComplete file (defaults to the same folder of SwapAccept file)'
-  )
-  .description('Parse and complete a given SwapAccept message')
-  .action(swapCompleteAction);
-
-/**
  * Trade
  */
 program
   .command('trade')
   .description('Make a trade proposal')
   .action(tradeAction);
-
-/**
- * operator
- */
-const operator = program
-  .command('operator')
-  .description('Interact with operator gRPC interface of the tdex-daemon');
-
-operator
-  .command('connect <endpoint>')
-  .description('Select gRPC interface of the tdex-daemon')
-  .action(operatorConnectAction);
-
-operator
-  .command('deposit')
-  .option('-f, --fee', 'Get the fee account address')
-  .description('Get the deposit address for creating a new market')
-  .action(operatorDepositAction);
 
 program.parse(process.argv);

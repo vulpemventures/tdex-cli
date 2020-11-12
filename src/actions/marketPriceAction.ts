@@ -33,8 +33,11 @@ export default function (): void {
     .then((prices: any[]) => {
       const [first] = prices;
 
-      info(`Swap fee %: ${first.fee.basisPoint}%\n`);
-      info(`Swap fee asset: ${first.fee.asset}%\n`);
+      info(
+        `Swap fee of ${first.fee.basisPoint / 100}% to be paid in asset ${
+          market.tickers[first.fee.asset]
+        }\n`
+      );
 
       const { quotePrice, basePrice } = first.price;
 

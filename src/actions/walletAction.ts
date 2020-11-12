@@ -24,10 +24,7 @@ function setWalletState(
       blindingKey: blindKey, //blinding private key
       keystore: {
         type: storageType,
-        value: {
-          signingKey: signKey,
-          blindingKey: blindKey,
-        },
+        value: signKey,
       },
     },
   });
@@ -109,7 +106,7 @@ export default function (): void {
                 identity,
                 storageType,
                 encrypt(signingKeyWIF, password),
-                encrypt(blindingKeyWIF, password)
+                blindingKeyWIF
               );
             })
             .catch(error);
@@ -129,6 +126,7 @@ export default function (): void {
 
         blindingkey.run().then((blindWif: string) => {
           restoredIdentity.value.blindingKeyWIF = blindWif;
+
           type.run().then((storageType: string) => {
             if (storageType === 'encrypted')
               password

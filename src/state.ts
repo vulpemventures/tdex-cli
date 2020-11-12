@@ -64,7 +64,7 @@ export const initialState = {
     blindingKey: '',
     keystore: {
       type: '',
-      value: {},
+      value: '',
     },
   },
 };

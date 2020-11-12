@@ -34,20 +34,6 @@ export default function () {
   if (!wallet.selected)
     return error('A wallet is required. Create or restore with wallet command');
 
-  const init = {
-    providerUrl: provider.endpoint,
-    explorerUrl: network.explorer,
-    identity: {
-      chain: network.chain,
-      type: IdentityType.PrivateKey,
-      value: {
-        signingKeyWIF: '',
-        blindingKeyWIF: '',
-      },
-    },
-  };
-  const trade = new Trade(init);
-
   const toggle = new Toggle({
     message: `Do you want to buy or sell ${
       market.tickers[market.assets.baseAsset]
@@ -74,7 +60,8 @@ export default function () {
     toReceive: string,
     amountToBeSent: number,
     amountToReceive: number,
-    isBuyType: boolean;
+    isBuyType: boolean,
+    trade: Trade;
 
   toggle
     .run()
@@ -102,10 +89,39 @@ export default function () {
       return Promise.resolve();
     })
     .then(() => {
+      const execute =
+        wallet.keystore.type === 'encrypted'
+          ? () => password.run()
+          : () => Promise.resolve(wallet.keystore.value);
+
+      return execute();
+    })
+    .then((passwordOrWif: string) => {
+      const wif =
+        wallet.keystore.type === 'encrypted'
+          ? decrypt(wallet.keystore.value, passwordOrWif)
+          : passwordOrWif;
+
+      const blindWif = wallet.blindingKey;
+
+      const init = {
+        providerUrl: provider.endpoint,
+        explorerUrl: network.explorer,
+        identity: {
+          chain: network.chain,
+          type: IdentityType.PrivateKey,
+          value: {
+            signingKeyWIF: wif,
+            blindingKeyWIF: blindWif,
+          },
+        },
+      };
+
       // Fetch market rate from daemon and calulcate prices for each ticker
       const tradeType = isBuyType ? TradeType.BUY : TradeType.SELL;
       const amount = isBuyType ? amountToReceive : amountToBeSent;
 
+      trade = new Trade(init);
       return trade.preview({ market: market.assets, tradeType, amount });
     })
     .then((preview: any) => {
@@ -128,26 +144,12 @@ export default function () {
     .then((keepGoing: boolean) => {
       if (!keepGoing) throw 'Canceled';
 
-      const execute =
-        wallet.keystore.type === 'encrypted'
-          ? () => password.run()
-          : () => Promise.resolve(wallet.keystore.value);
-
-      return execute();
-    })
-    .then((passwordOrWif: string) => {
-      const wif =
-        wallet.keystore.type === 'encrypted'
-          ? decrypt(wallet.keystore.value, passwordOrWif)
-          : passwordOrWif;
-
       log(`\nSending Trade proposal to provider...`);
       log('Signing with private key...');
 
       const params = {
         market: market.assets,
         amount: isBuyType ? amountToReceive : amountToBeSent,
-        privateKey: wif,
       };
 
       const execute = isBuyType

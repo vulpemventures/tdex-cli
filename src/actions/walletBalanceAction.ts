@@ -1,4 +1,5 @@
-import { fetchBalances } from 'tdex-sdk';
+import { fetchBalances, networks } from 'tdex-sdk';
+import { ECPair } from 'liquidjs-lib';
 import { info, log, error, success } from '../logger';
 import { fetchTicker } from '../helpers';
 import State from '../state';
@@ -15,8 +16,13 @@ export default function (): void {
     );
 
   //Get balance with the explorer
-  fetchBalances(wallet.address, wallet.blindingKey, network.explorer).then(
-    (balances) => {
+  const blindingPrivKey = ECPair.fromWIF(
+    wallet.blindingKey,
+    (networks as any)[network.chain]
+  ).privateKey!.toString('hex');
+
+  fetchBalances(wallet.address, blindingPrivKey, network.explorer)
+    .then((balances) => {
       const entries = Object.entries(balances);
 
       if (entries.length === 0) return log('No transactions found.');
@@ -38,6 +44,6 @@ export default function (): void {
           });
       });
       Promise.all(promises);
-    }
-  );
+    })
+    .catch(console.error);
 }

@@ -17,6 +17,7 @@ import {
   marketListAction,
   connectAction,
   marketPriceAction,
+  walletSendAction,
   walletBalanceAction,
   tradeAction,
 } from './actions';
@@ -86,6 +87,11 @@ wallet
   .command('balance')
   .description('Show current wallet balance')
   .action(walletBalanceAction);
+
+wallet
+  .command('send')
+  .description('Send funds of an asset to a given address')
+  .action(walletSendAction);
 
 /**
  * Trade

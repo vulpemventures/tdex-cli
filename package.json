@@ -26,11 +26,13 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.2.0",
     "axios": "^0.19.2",
+    "bip174": "vulpemventures/bip174",
     "chalk": "^3.0.0",
     "commander": "^5.0.0",
     "enquirer": "^2.3.4",
+    "liquidjs-lib": "vulpemventures/liquidjs-lib",
     "tdex-protobuf": "tdex-network/tdex-protobuf#beta",
-    "tdex-sdk": "^1.0.7"
+    "tdex-sdk": "^1.0.8"
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",

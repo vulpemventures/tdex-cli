@@ -475,9 +475,8 @@ bindings@^1.3.0, bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-"bip174@github:vulpemventures/bip174", bip174@vulpemventures/bip174:
+"bip174@github:vulpemventures/bip174":
   version "1.0.1"
-  uid "7b5df0d0013056ab774fb33c7940a0729b6b31c6"
   resolved "https://codeload.github.com/vulpemventures/bip174/tar.gz/7b5df0d0013056ab774fb33c7940a0729b6b31c6"
 
 bip32@^2.0.4, bip32@^2.0.6:

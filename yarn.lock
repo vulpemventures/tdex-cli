@@ -493,9 +493,9 @@ bip32@^2.0.4, bip32@^2.0.6:
     wif "^2.0.6"
 
 bip39@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/bip39/-/bip39-3.0.2.tgz#2baf42ff3071fc9ddd5103de92e8f80d9257ee32"
-  integrity sha512-J4E1r2N0tUylTKt07ibXvhpT2c5pyAFgvuA5q1H9uDy6dEGpjV8jmymh3MTYJDLCNbIVClSB9FbND49I6N24MQ==
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/bip39/-/bip39-3.0.3.tgz#4a8b79067d6ed2e74f9199ac994a2ab61b176760"
+  integrity sha512-P0dKrz4g0V0BjXfx7d9QNkJ/Txcz/k+hM9TnjqjUaXtuOfAvxXSw2rJw8DX0e3ZPwnK/IgDxoRqf0bvoVCqbMg==
   dependencies:
     "@types/node" "11.11.6"
     create-hash "^1.1.0"
@@ -2006,9 +2006,9 @@ google-p12-pem@^3.0.3:
     node-forge "^0.10.0"
 
 google-protobuf@^3.11.4:
-  version "3.13.0"
-  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.13.0.tgz#909c5983d75dd6101ed57c79e0528d000cdc3251"
-  integrity sha512-ZIf3qfLFayVrPvAjeKKxO5FRF1/NwRxt6Dko+fWEMuHwHbZx8/fcaAao9b0wCM6kr8qeg2te8XTpyuvKuD9aKw==
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.14.0.tgz#20373d22046e63831a5110e11a84f713cc43651e"
+  integrity sha512-bwa8dBuMpOxg7COyqkW6muQuvNnWgVN8TX/epDRGW5m0jcrmq2QJyCyiV8ZE2/6LaIIqJtiv9bYokFhfpy/o6w==
 
 got@^8.3.1:
   version "8.3.2"
@@ -4133,10 +4133,10 @@ tdex-protobuf@tdex-network/tdex-protobuf#beta:
   dependencies:
     grpc-web "1.2.0"
 
-tdex-sdk@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-1.0.8.tgz#3796848381ad79e274a0cc02d39f2e63ab7de547"
-  integrity sha512-1MNtCGDGeUJ5IgIdGRnv4RmrXVl5T4BPJRGaKd8GAfjo9qeU7VNPAX7edywoWYYNLqb75tt/Agfu6+zUcNuaFg==
+tdex-sdk@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-1.0.9.tgz#d6b39b2c23be6ab5a2d29e9d7f27dd6fc4632fcb"
+  integrity sha512-270upivYjngUPJ0pO6qK7bWUDFT7V/e0aodm8Y4QFRqE/sph6Lg5c0lMp9kQyURbI2jjL1Kb7Vpkm+dI02a57A==
   dependencies:
     "@grpc/grpc-js" "^1.0.4"
     "@types/google-protobuf" "^3.7.2"

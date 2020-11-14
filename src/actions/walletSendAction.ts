@@ -9,7 +9,7 @@ import {
   Wallet,
 } from 'tdex-sdk';
 import { ECPair, Transaction, TxOutput } from 'liquidjs-lib';
-import { info, error } from '../logger';
+import { info, error, log } from '../logger';
 import State from '../state';
 import { toSatoshi } from '../helpers';
 import { decrypt } from '../crypto';
@@ -108,6 +108,8 @@ export default function (): void {
         network.chain
       );
       const tx = senderWallet.createTx();
+
+      log('Creating and blinding transaction...');
       unsignedTx = senderWallet.buildTx(
         tx,
         senderUtxos,
@@ -152,8 +154,6 @@ export default function (): void {
       // Get the tx in hex format ready to be broadcasted
       const hex = Wallet.toHex(signedTx);
       info(hex);
-      info('');
-      info(signedTx);
     })
     .catch(error);
 }

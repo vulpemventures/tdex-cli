@@ -30,7 +30,7 @@
     "commander": "^5.0.0",
     "enquirer": "^2.3.4",
     "tdex-protobuf": "tdex-network/tdex-protobuf#beta",
-    "tdex-sdk": "^1.0.9"
+    "tdex-sdk": "^1.1.1"
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",

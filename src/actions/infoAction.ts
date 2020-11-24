@@ -1,6 +1,6 @@
 import { info, log } from '../logger';
 
-import State from '../state';
+import State, { getWalletInfo } from '../state';
 const state = new State();
 
 export default function (): void {
@@ -16,7 +16,7 @@ export default function (): void {
 
   if (market.selected) infos.push(`Market: ${market.pair}`);
 
-  if (wallet.selected) infos.push(`Wallet address: ${wallet.address}`);
+  if (wallet.selected) infos.push(getWalletInfo(wallet));
 
   if (infos.length === 0)
     return log(`State is empty. Start configuring the CLI`);

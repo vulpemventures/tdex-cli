@@ -1,7 +1,25 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as PathModule from 'path';
+import { AddressInterface } from 'tdex-sdk';
+import { IdentityInterface } from 'tdex-sdk/dist/identity';
 import { mergeDeep } from './helpers';
+
+export enum KeyStoreType {
+  Encrypted,
+  Plain,
+}
+
+export function stringToKeyStoreType(str: string): KeyStoreType {
+  switch (str.toLowerCase()) {
+    case 'encrypted':
+      return KeyStoreType.Encrypted;
+    case 'plain':
+      return KeyStoreType.Plain;
+  }
+
+  throw Error(`"${str}" is not a valid KeyStoreTypeValue`);
+}
 
 export interface StateInterface {
   state: StateObjectInterface;
@@ -15,7 +33,7 @@ export interface StateObjectInterface {
   network: StateNetworkInterface;
   provider: StateProviderInterface;
   market: StateMarketInterface;
-  wallet: any;
+  wallet: StateWalletInterface;
 }
 
 export interface StateProviderInterface {
@@ -39,7 +57,33 @@ export interface StateNetworkInterface {
   explorer: string;
 }
 
-export const initialState = {
+export interface StateWalletInterface {
+  selected: boolean;
+  identity?: IdentityInterface;
+  keystore: {
+    type: KeyStoreType;
+    value: string;
+  };
+}
+
+export function getWalletInfo(walletState: StateWalletInterface): string {
+  let walletInfo = 'Wallet addresses:\n';
+
+  walletState.identity
+    ?.getAddresses()
+    .forEach(
+      (
+        { blindingPrivateKey, confidentialAddress }: AddressInterface,
+        index: number
+      ) => {
+        walletInfo += `\t${index}- address: ${confidentialAddress}, blinding private key: ${blindingPrivateKey}\n`;
+      }
+    );
+
+  return walletInfo;
+}
+
+export const initialState: StateObjectInterface = {
   network: {
     selected: false,
     chain: '',
@@ -59,11 +103,10 @@ export const initialState = {
     assets: {},
   },
   wallet: {
+    identity: undefined,
     selected: false,
-    address: '',
-    blindingKey: '',
     keystore: {
-      type: '',
+      type: KeyStoreType.Plain,
       value: '',
     },
   },

@@ -4,15 +4,12 @@ import {
   networks,
   UtxoInterface,
   walletFromAddresses,
-  IdentityType,
-  PrivateKey,
   Wallet,
 } from 'tdex-sdk';
-import { ECPair, Transaction, TxOutput } from 'liquidjs-lib';
+import { Transaction, TxOutput } from 'liquidjs-lib';
 import { info, error, log } from '../logger';
-import State from '../state';
+import State, { KeyStoreType } from '../state';
 import { toSatoshi } from '../helpers';
-import { decrypt } from '../crypto';
 //eslint-disable-next-line
 const { NumberPrompt, Input, Confirm, Password } = require('enquirer');
 
@@ -51,11 +48,6 @@ export default function (): void {
   });
 
   //Get balance with the explorer
-  const blindingPrivKey = ECPair.fromWIF(
-    wallet.blindingKey,
-    (networks as any)[network.chain]
-  ).privateKey!.toString('hex');
-
   let senderUtxos: UtxoInterface[];
   let assetToBeSent: string;
   let addressToSend: string;
@@ -75,11 +67,15 @@ export default function (): void {
     })
     .then((recipient: string) => {
       addressToSend = recipient;
-
-      return fetchUtxos(wallet.address, network.explorer);
+      const promises = wallet
+        .identity!.getAddresses()
+        .map(({ confidentialAddress }) => {
+          return fetchUtxos(confidentialAddress, network.explorer);
+        });
+      return Promise.all(promises);
     })
-    .then((utxos: UtxoInterface[]) => {
-      senderUtxos = utxos;
+    .then((utxos: UtxoInterface[][]) => {
+      senderUtxos = utxos.flat();
       return Promise.all(
         utxos.map((utxo: any) => fetchTxHex(utxo.txid, network.explorer))
       );
@@ -99,15 +95,12 @@ export default function (): void {
     .then(() => {
       // create a tx using wallet
       const senderWallet = walletFromAddresses(
-        [
-          {
-            confidentialAddress: wallet.address,
-            blindingPrivateKey: blindingPrivKey,
-          },
-        ],
+        wallet.identity!.getAddresses(),
         network.chain
       );
       const tx = senderWallet.createTx();
+
+      const nextChangeAddress = wallet.identity?.getNextChangeAddress();
 
       log('Creating and blinding transaction...');
       unsignedTx = senderWallet.buildTx(
@@ -116,7 +109,7 @@ export default function (): void {
         addressToSend,
         amountToBeSent,
         assetToBeSent,
-        wallet.address
+        nextChangeAddress!.confidentialAddress
       );
 
       return confirm.run();
@@ -125,30 +118,15 @@ export default function (): void {
       if (!keepGoing) throw 'Canceled';
 
       const execute =
-        wallet.keystore.type === 'encrypted'
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? () => password.run()
           : () => Promise.resolve(wallet.keystore.value);
 
       return execute();
     })
     .then((passwordOrWif: string) => {
-      const wif =
-        wallet.keystore.type === 'encrypted'
-          ? decrypt(wallet.keystore.value, passwordOrWif)
-          : passwordOrWif;
-
-      const blindWif = wallet.blindingKey;
-
-      const identity = new PrivateKey({
-        chain: network.chain,
-        type: IdentityType.PrivateKey,
-        value: {
-          signingKeyWIF: wif,
-          blindingKeyWIF: blindWif,
-        },
-      });
-
-      return identity.signPset(unsignedTx);
+      log(passwordOrWif + ' is useless to sign (TO DO)');
+      return wallet.identity!.signPset(unsignedTx);
     })
     .then((signedTx: string) => {
       // Get the tx in hex format ready to be broadcasted

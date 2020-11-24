@@ -1,7 +1,7 @@
 import { IdentityType, Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
-import State from '../state';
+import State, { KeyStoreType } from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
 
@@ -90,29 +90,26 @@ export default function () {
     })
     .then(() => {
       const execute =
-        wallet.keystore.type === 'encrypted'
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? () => password.run()
           : () => Promise.resolve(wallet.keystore.value);
 
       return execute();
     })
     .then((passwordOrWif: string) => {
-      const wif =
-        wallet.keystore.type === 'encrypted'
+      const seed =
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? decrypt(wallet.keystore.value, passwordOrWif)
           : passwordOrWif;
-
-      const blindWif = wallet.blindingKey;
 
       const init = {
         providerUrl: provider.endpoint,
         explorerUrl: network.explorer,
         identity: {
           chain: network.chain,
-          type: IdentityType.PrivateKey,
+          type: IdentityType.Mnemonic,
           value: {
-            signingKeyWIF: wif,
-            blindingKeyWIF: blindWif,
+            mnemonic: seed,
           },
         },
       };

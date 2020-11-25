@@ -79,7 +79,7 @@ market
  */
 
 const wallet = program
-  .command('wallet')
+  .command('wallet <walletCommand>')
   .description('Create new key pair or restore from WIF')
   .action(walletAction);
 

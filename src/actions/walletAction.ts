@@ -17,7 +17,48 @@ import State, {
   stringToKeyStoreType,
 } from '../state';
 
+// global variables
 const state = new State();
+
+const password = new enquirer.Password({
+  type: 'password',
+  name: 'password',
+  message: 'Type your password',
+});
+
+// wallet: generate a new address
+async function walletAddress() {
+  try {
+    const { wallet } = state.get();
+
+    if (!wallet.selected)
+      return error('Wallet no initialized: try "wallet init".');
+
+    let pwd = undefined;
+    if (wallet.keystore.type === KeyStoreType.Encrypted) {
+      pwd = await password.run();
+    }
+
+    const identity = state.getMnemonicIdentityFromState(pwd);
+    const newAddressAndBlindPrivKey = identity.getNextAddress();
+
+    // save the new address in cache
+    state.set({
+      wallet: {
+        addressesWithBlindingKey: [
+          ...wallet.addressesWithBlindingKey,
+          newAddressAndBlindPrivKey,
+        ],
+      },
+    });
+
+    return success(
+      `new address: ${newAddressAndBlindPrivKey.confidentialAddress}`
+    );
+  } catch (err) {
+    error(err);
+  }
+}
 
 async function setWalletState(
   identityOpts: IdentityOpts,
@@ -52,10 +93,9 @@ async function setWalletState(
   }
 }
 
-export default async function () {
+// wallet initialization
+async function walletInit() {
   try {
-    info('=========*** Wallet ***==========\n');
-
     const { network, wallet } = state.get();
 
     if (!network.selected) return error('Select a valid network');
@@ -78,12 +118,6 @@ export default async function () {
         { name: 'Encrypted', message: 'Encrypted (AES-128-CBC)' },
         { name: 'Plain', message: 'Plain Text (not recommended)' },
       ],
-    });
-
-    const password = new enquirer.Password({
-      type: 'password',
-      name: 'password',
-      message: 'Type your password',
     });
 
     // ask if restored wallet
@@ -147,5 +181,19 @@ export default async function () {
     return;
   } catch (err) {
     error(err);
+  }
+}
+
+// command function
+export default async function (walletCommand: string) {
+  switch (walletCommand) {
+    case 'init':
+      info('=========*** Init wallet ***==========\n');
+      return walletInit();
+    case 'address':
+      info('=========*** Wallet: generate new address ***==========\n');
+      return walletAddress();
+    default:
+      error('Invalid wallet argument: need "init" or "address"');
   }
 }

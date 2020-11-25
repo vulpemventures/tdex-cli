@@ -198,7 +198,7 @@ export default class State implements StateInterface {
   getMnemonicIdentityFromState(password?: string): Mnemonic {
     let seed = this.state.wallet.keystore.value;
     if (this.state.wallet.keystore.type == KeyStoreType.Encrypted) {
-      if (password == null)
+      if (!password || password.length === 0)
         throw new Error(
           'The wallet seed is encrypted, please provide the password.'
         );

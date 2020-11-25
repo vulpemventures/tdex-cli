@@ -11,11 +11,11 @@ import { encrypt } from '../crypto';
 const enquirer = require('enquirer');
 
 import State, {
-  getWalletInfo,
   KeyStoreType,
   StateWalletInterface,
   stringToKeyStoreType,
 } from '../state';
+import { getWalletInfo } from '../helpers';
 
 // global variables
 const state = new State();
@@ -40,6 +40,8 @@ async function walletAddress() {
     }
 
     const identity = state.getMnemonicIdentityFromState(pwd);
+    await identity.isRestored;
+
     const newAddressAndBlindPrivKey = identity.getNextAddress();
 
     // save the new address in cache
@@ -87,7 +89,7 @@ async function setWalletState(
     success(`Wallet has been created/restored successfully`);
     log();
     log(`Be sure to backup your data directory before sending any funds`);
-    log(getWalletInfo(state.get().wallet));
+    log(getWalletInfo(state.get().wallet.addressesWithBlindingKey));
   } catch (err) {
     error(err);
   }
@@ -101,7 +103,8 @@ async function walletInit() {
     if (!network.selected) return error('Select a valid network');
 
     // if wallet is already configured, log the state.
-    if (wallet.selected) return log(getWalletInfo(wallet));
+    if (wallet.selected)
+      return log(getWalletInfo(wallet.addressesWithBlindingKey));
 
     const restore = new enquirer.Toggle({
       message: 'Want to restore from mnemonic seed?',

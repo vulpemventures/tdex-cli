@@ -1,13 +1,37 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as PathModule from 'path';
-import { AddressInterface } from 'tdex-sdk';
-import { IdentityInterface } from 'tdex-sdk/dist/identity';
+import {
+  AddressInterface,
+  IdentityOpts,
+  IdentityRestorerInterface,
+  IdentityType,
+  Mnemonic,
+} from 'tdex-sdk';
+import { decrypt } from './crypto';
 import { mergeDeep } from './helpers';
 
 export enum KeyStoreType {
   Encrypted,
   Plain,
+}
+
+export class IdentityRestorerFromState implements IdentityRestorerInterface {
+  private cachedAddresses: string[];
+
+  constructor(walletState: StateWalletInterface) {
+    this.cachedAddresses = walletState.addressesWithBlindingKey.map(
+      (addrI) => addrI.confidentialAddress
+    );
+  }
+
+  async addressHasBeenUsed(address: string): Promise<boolean> {
+    return this.cachedAddresses.includes(address);
+  }
+
+  async addressesHaveBeenUsed(addresses: string[]): Promise<boolean[]> {
+    return Promise.all(addresses.map((addr) => this.addressHasBeenUsed(addr)));
+  }
 }
 
 export function stringToKeyStoreType(str: string): KeyStoreType {
@@ -59,7 +83,7 @@ export interface StateNetworkInterface {
 
 export interface StateWalletInterface {
   selected: boolean;
-  identity?: IdentityInterface;
+  addressesWithBlindingKey: AddressInterface[];
   keystore: {
     type: KeyStoreType;
     value: string;
@@ -67,18 +91,19 @@ export interface StateWalletInterface {
 }
 
 export function getWalletInfo(walletState: StateWalletInterface): string {
+  if (walletState.addressesWithBlindingKey.length === 0)
+    return '0 addresses in your wallet';
+
   let walletInfo = 'Wallet addresses:\n';
 
-  walletState.identity
-    ?.getAddresses()
-    .forEach(
-      (
-        { blindingPrivateKey, confidentialAddress }: AddressInterface,
-        index: number
-      ) => {
-        walletInfo += `\t${index}- address: ${confidentialAddress}, blinding private key: ${blindingPrivateKey}\n`;
-      }
-    );
+  walletState.addressesWithBlindingKey.forEach(
+    (
+      { blindingPrivateKey, confidentialAddress }: AddressInterface,
+      index: number
+    ) => {
+      walletInfo += `\t${index}- address: ${confidentialAddress}, blinding private key: ${blindingPrivateKey}\n`;
+    }
+  );
 
   return walletInfo;
 }
@@ -103,8 +128,8 @@ export const initialState: StateObjectInterface = {
     assets: {},
   },
   wallet: {
-    identity: undefined,
     selected: false,
+    addressesWithBlindingKey: [],
     keystore: {
       type: KeyStoreType.Plain,
       value: '',
@@ -168,5 +193,28 @@ export default class State implements StateInterface {
     this.state = JSON.parse(read);
 
     return this.state;
+  }
+
+  getMnemonicIdentityFromState(password?: string): Mnemonic {
+    let seed = this.state.wallet.keystore.value;
+    if (this.state.wallet.keystore.type == KeyStoreType.Encrypted) {
+      if (password == null)
+        throw new Error(
+          'The wallet seed is encrypted, please provide the password.'
+        );
+      seed = decrypt(seed, password);
+    }
+
+    const opts: IdentityOpts = {
+      chain: this.state.network.chain,
+      type: IdentityType.Mnemonic,
+      value: {
+        mnemonic: seed,
+      },
+      initializeFromRestorer: true,
+      restorer: new IdentityRestorerFromState(this.state.wallet),
+    };
+
+    return new Mnemonic(opts);
   }
 }

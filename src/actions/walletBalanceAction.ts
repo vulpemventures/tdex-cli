@@ -60,16 +60,16 @@ export default function (): void {
     );
 
   // if (entries.lddength === 0) return log('No transactions found.');
-  const fetchBalancesPromises = wallet
-    .identity!.getAddresses()
-    .map(({ confidentialAddress, blindingPrivateKey }) => {
+  const fetchBalancesPromises = wallet.addressesWithBlindingKey.map(
+    ({ confidentialAddress, blindingPrivateKey }) => {
       return getBalance(
         confidentialAddress,
         blindingPrivateKey,
         network.explorer,
         network.chain
       );
-    });
+    }
+  );
 
   Promise.all(fetchBalancesPromises).then((results: BalanceResult[][]) => {
     const balances = results.reduce(reducer, results[0]);

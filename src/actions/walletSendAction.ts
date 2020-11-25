@@ -52,7 +52,6 @@ export default function (): void {
   let assetToBeSent: string;
   let addressToSend: string;
   let amountToBeSent: number;
-  let unsignedTx: string;
 
   asset
     .run()
@@ -67,11 +66,11 @@ export default function (): void {
     })
     .then((recipient: string) => {
       addressToSend = recipient;
-      const promises = wallet
-        .identity!.getAddresses()
-        .map(({ confidentialAddress }) => {
+      const promises = wallet.addressesWithBlindingKey.map(
+        ({ confidentialAddress }) => {
           return fetchUtxos(confidentialAddress, network.explorer);
-        });
+        }
+      );
       return Promise.all(promises);
     })
     .then((utxos: UtxoInterface[][]) => {
@@ -90,28 +89,6 @@ export default function (): void {
         utxo.prevout = outputs[index];
       });
 
-      return;
-    })
-    .then(() => {
-      // create a tx using wallet
-      const senderWallet = walletFromAddresses(
-        wallet.identity!.getAddresses(),
-        network.chain
-      );
-      const tx = senderWallet.createTx();
-
-      const nextChangeAddress = wallet.identity?.getNextChangeAddress();
-
-      log('Creating and blinding transaction...');
-      unsignedTx = senderWallet.buildTx(
-        tx,
-        senderUtxos,
-        addressToSend,
-        amountToBeSent,
-        assetToBeSent,
-        nextChangeAddress!.confidentialAddress
-      );
-
       return confirm.run();
     })
     .then((keepGoing: boolean) => {
@@ -120,13 +97,42 @@ export default function (): void {
       const execute =
         wallet.keystore.type === KeyStoreType.Encrypted
           ? () => password.run()
-          : () => Promise.resolve(wallet.keystore.value);
+          : () => Promise.resolve(undefined);
 
       return execute();
     })
-    .then((passwordOrWif: string) => {
-      log(passwordOrWif + ' is useless to sign (TO DO)');
-      return wallet.identity!.signPset(unsignedTx);
+    .then((password?: string) => {
+      const identity = state.getMnemonicIdentityFromState(password);
+      // create a tx using wallet
+      const senderWallet = walletFromAddresses(
+        wallet.addressesWithBlindingKey,
+        network.chain
+      );
+      const tx = senderWallet.createTx();
+
+      const nextChangeAddress = identity.getNextChangeAddress();
+
+      log('Creating and blinding transaction...');
+      const unsignedTx = senderWallet.buildTx(
+        tx,
+        senderUtxos,
+        addressToSend,
+        amountToBeSent,
+        assetToBeSent,
+        nextChangeAddress.confidentialAddress
+      );
+
+      // cache the newly created address
+      state.set({
+        wallet: {
+          addressesWithBlindingKey: [
+            ...wallet.addressesWithBlindingKey,
+            nextChangeAddress,
+          ],
+        },
+      });
+
+      return identity.signPset(unsignedTx);
     })
     .then((signedTx: string) => {
       // Get the tx in hex format ready to be broadcasted

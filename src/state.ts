@@ -90,24 +90,6 @@ export interface StateWalletInterface {
   };
 }
 
-export function getWalletInfo(walletState: StateWalletInterface): string {
-  if (walletState.addressesWithBlindingKey.length === 0)
-    return '0 addresses in your wallet';
-
-  let walletInfo = 'Wallet addresses:\n';
-
-  walletState.addressesWithBlindingKey.forEach(
-    (
-      { blindingPrivateKey, confidentialAddress }: AddressInterface,
-      index: number
-    ) => {
-      walletInfo += `\t${index}- address: ${confidentialAddress}, blinding private key: ${blindingPrivateKey}\n`;
-    }
-  );
-
-  return walletInfo;
-}
-
 export const initialState: StateObjectInterface = {
   network: {
     selected: false,

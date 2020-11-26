@@ -1,7 +1,7 @@
-import { IdentityType, Trade, TradeType } from 'tdex-sdk';
+import { IdentityOpts, IdentityType, Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
-import State, { KeyStoreType } from '../state';
+import State, { IdentityRestorerFromState, KeyStoreType } from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
 
@@ -102,16 +102,20 @@ export default function () {
           ? decrypt(wallet.keystore.value, passwordOrWif)
           : passwordOrWif;
 
+      const identityOptions: IdentityOpts = {
+        chain: network.chain,
+        type: IdentityType.Mnemonic,
+        value: {
+          mnemonic: seed,
+        },
+        initializeFromRestorer: true,
+        restorer: new IdentityRestorerFromState(wallet),
+      };
+
       const init = {
         providerUrl: provider.endpoint,
         explorerUrl: network.explorer,
-        identity: {
-          chain: network.chain,
-          type: IdentityType.Mnemonic,
-          value: {
-            mnemonic: seed,
-          },
-        },
+        identity: identityOptions,
       };
 
       // Fetch market rate from daemon and calulcate prices for each ticker

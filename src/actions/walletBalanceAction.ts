@@ -71,14 +71,16 @@ export default function (): void {
     }
   );
 
-  Promise.all(fetchBalancesPromises).then((results: BalanceResult[][]) => {
-    const balances = results.reduce(reducer, results[0]);
-    if (balances.length === 0) return log('No transactions found.');
-    balances.forEach(({ asset, ticker, amount }) => {
-      success(`*** ${ticker} ***`);
-      log(`Balance ${amount} satoshis`);
-      log(`Asset hash: ${asset}`);
-    });
-    return;
-  });
+  Promise.all(fetchBalancesPromises)
+    .then((results: BalanceResult[][]) => {
+      const balances = results.slice(1).reduce(reducer, results[0]);
+      if (balances.length === 0) return log('No transactions found.');
+      balances.forEach(({ asset, ticker, amount }) => {
+        success(`*** ${ticker} ***`);
+        log(`Balance ${amount} satoshis`);
+        log(`Asset hash: ${asset}`);
+      });
+      return;
+    })
+    .catch(error);
 }

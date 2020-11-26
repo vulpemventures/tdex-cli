@@ -1,5 +1,22 @@
 # 💻 tdex-cli
-Non-custodial Liquid Wallet CLI to make trades on TDex Network via atomic swaps 
+Non-custodial Liquid Wallet CLI to make trades on TDex Network via atomic swaps.
+
+Made with 🖤 by [Vulpem Ventures](https://vulpem.com)
+
+## ⬇️ Install
+
+* Install with **yarn**
+```sh
+$ yarn add tdex-cli@beta
+```
+* Install with **npm**
+```sh
+$ npm install --save tdex-cli@beta
+```
+
+## 📄 Usage
+
+In-depth documentation for using the tdex-cli is available at [docs.tdex.network](https://docs.tdex.network/tdex-cli.html)
 
 
 ## Development

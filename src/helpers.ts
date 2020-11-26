@@ -18,8 +18,8 @@ export const TAXI_API_URL = {
 };
 
 export function getWalletInfo(addresses: AddressInterface[]): string {
-  if (addresses.length === 0)
-    return '0 addresses in your wallet: try "wallet address" to generate new one';
+  if (!addresses || addresses.length === 0)
+    return '0 addresses in your wallet: use "wallet address" to generate new one';
 
   let walletInfo = 'Wallet addresses:\n';
 

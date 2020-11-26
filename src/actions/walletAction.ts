@@ -8,7 +8,6 @@ import {
 } from 'tdex-sdk';
 import { encrypt } from '../crypto';
 //eslint-disable-next-line
-const enquirer = require('enquirer');
 
 import State, {
   KeyStoreType,
@@ -16,6 +15,9 @@ import State, {
   stringToKeyStoreType,
 } from '../state';
 import { getWalletInfo } from '../helpers';
+
+//eslint-disable-next-line
+const enquirer = require('enquirer');
 
 // global variables
 const state = new State();
@@ -188,7 +190,15 @@ async function walletInit() {
 }
 
 // command function
-export default async function (walletCommand: string) {
+export default async function () {
+  const subCommandSelect = new enquirer.Select({
+    name: 'walletCommand',
+    message: 'Pick a wallet command',
+    choices: ['init', 'address'],
+  });
+
+  const walletCommand = await subCommandSelect.run();
+
   switch (walletCommand) {
     case 'init':
       info('=========*** Init wallet ***==========\n');
@@ -196,7 +206,5 @@ export default async function (walletCommand: string) {
     case 'address':
       info('=========*** Wallet: generate new address ***==========\n');
       return walletAddress();
-    default:
-      error('Invalid wallet argument: need "init" or "address"');
   }
 }

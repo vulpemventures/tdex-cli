@@ -1,4 +1,4 @@
-import { log, error, success } from '../logger';
+import { log, error, success, info } from '../logger';
 import * as bip39 from 'bip39';
 import {
   EsploraIdentityRestorer,
@@ -63,6 +63,7 @@ async function setWalletState(
 
 // command function
 export default async function () {
+  info('=========*** Wallet ***==========\n');
   try {
     const { network, wallet } = state.get();
 

@@ -1,4 +1,4 @@
-import { error, success } from '../logger';
+import { error, info, success } from '../logger';
 import State, { KeyStoreType } from '../state';
 
 //eslint-disable-next-line
@@ -14,6 +14,7 @@ const password = new enquirer.Password({
 
 // wallet: generate a new address
 export default async function () {
+  info('=========*** Wallet ***==========\n');
   try {
     const { wallet } = state.get();
 

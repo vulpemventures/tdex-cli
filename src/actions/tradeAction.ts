@@ -159,6 +159,14 @@ export default function () {
       return execute();
     })
     .then((txid: string) => {
+      // overwrite the addresses cache in state
+      const addresses = trade.identity.getAddresses();
+      state.set({
+        wallet: {
+          addressesWithBlindingKey: addresses,
+        },
+      });
+
       success('Trade completed!\n');
       info(`tx hash ${txid}`);
     })

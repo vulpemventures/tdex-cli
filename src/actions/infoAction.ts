@@ -1,4 +1,3 @@
-import { getWalletInfo } from '../helpers';
 import { info, log } from '../logger';
 
 import State from '../state';
@@ -18,7 +17,9 @@ export default function (): void {
   if (market.selected) infos.push(`Market: ${market.pair}`);
 
   if (wallet.selected)
-    infos.push(getWalletInfo(wallet.addressesWithBlindingKey));
+    infos.push(
+      `Number of wallet addresses: ${wallet.addressesWithBlindingKey.length}`
+    );
 
   if (infos.length === 0)
     return log(`State is empty. Start configuring the CLI`);

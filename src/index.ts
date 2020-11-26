@@ -21,6 +21,7 @@ import {
   walletBalanceAction,
   tradeAction,
 } from './actions';
+import walletAddressAction from './actions/walletAddressAction';
 
 import { NETWORKS } from './helpers';
 //eslint-disable-next-line
@@ -82,6 +83,11 @@ const wallet = program
   .command('wallet')
   .description('Create new key pair or restore from WIF')
   .action(walletAction);
+
+wallet
+  .command('address')
+  .description('generate a new address')
+  .action(walletAddressAction);
 
 wallet
   .command('balance')

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import axios from 'axios';
 import { URL } from 'url';
-import { networks } from 'tdex-sdk';
+import { AddressInterface, networks } from 'tdex-sdk';
 
 import * as fs from 'fs';
 import * as os from 'os';
@@ -16,6 +16,24 @@ export const TAXI_API_URL = {
   liquid: 'https://liquid-taxi.herokuapp.com',
   regtest: 'https://liquid-taxi.herokuapp.com',
 };
+
+export function getWalletInfo(addresses: AddressInterface[]): string {
+  if (!addresses || addresses.length === 0)
+    return '0 addresses in your wallet: use "wallet address" to generate new one';
+
+  let walletInfo = 'Wallet addresses:\n\n';
+
+  addresses.forEach(
+    (
+      { blindingPrivateKey, confidentialAddress }: AddressInterface,
+      index: number
+    ) => {
+      walletInfo += `index: ${index}\naddress: ${confidentialAddress}\nblinding: ${blindingPrivateKey}\n\n`;
+    }
+  );
+
+  return walletInfo;
+}
 
 export function toSatoshi(x: number): number {
   return Math.floor(x * Math.pow(10, 8));

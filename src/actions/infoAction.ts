@@ -16,7 +16,10 @@ export default function (): void {
 
   if (market.selected) infos.push(`Market: ${market.pair}`);
 
-  if (wallet.selected) infos.push(`Wallet address: ${wallet.address}`);
+  if (wallet.selected)
+    infos.push(
+      `Number of wallet addresses: ${wallet.addressesWithBlindingKey.length}`
+    );
 
   if (infos.length === 0)
     return log(`State is empty. Start configuring the CLI`);

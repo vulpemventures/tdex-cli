@@ -1,7 +1,7 @@
-import { IdentityType, Trade, TradeType } from 'tdex-sdk';
+import { IdentityOpts, IdentityType, Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
-import State from '../state';
+import State, { IdentityRestorerFromState, KeyStoreType } from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
 
@@ -90,31 +90,32 @@ export default function () {
     })
     .then(() => {
       const execute =
-        wallet.keystore.type === 'encrypted'
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? () => password.run()
           : () => Promise.resolve(wallet.keystore.value);
 
       return execute();
     })
     .then((passwordOrWif: string) => {
-      const wif =
-        wallet.keystore.type === 'encrypted'
+      const seed =
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? decrypt(wallet.keystore.value, passwordOrWif)
           : passwordOrWif;
 
-      const blindWif = wallet.blindingKey;
+      const identityOptions: IdentityOpts = {
+        chain: network.chain,
+        type: IdentityType.Mnemonic,
+        value: {
+          mnemonic: seed,
+        },
+        initializeFromRestorer: true,
+        restorer: new IdentityRestorerFromState(wallet),
+      };
 
       const init = {
         providerUrl: provider.endpoint,
         explorerUrl: network.explorer,
-        identity: {
-          chain: network.chain,
-          type: IdentityType.PrivateKey,
-          value: {
-            signingKeyWIF: wif,
-            blindingKeyWIF: blindWif,
-          },
-        },
+        identity: identityOptions,
       };
 
       // Fetch market rate from daemon and calulcate prices for each ticker
@@ -158,6 +159,14 @@ export default function () {
       return execute();
     })
     .then((txid: string) => {
+      // overwrite the addresses cache in state
+      const addresses = trade.identity.getAddresses();
+      state.set({
+        wallet: {
+          addressesWithBlindingKey: addresses,
+        },
+      });
+
       success('Trade completed!\n');
       info(`tx hash ${txid}`);
     })

@@ -4,15 +4,12 @@ import {
   networks,
   UtxoInterface,
   walletFromAddresses,
-  IdentityType,
-  PrivateKey,
   Wallet,
 } from 'tdex-sdk';
-import { ECPair, Transaction, TxOutput } from 'liquidjs-lib';
+import { Transaction, TxOutput } from 'liquidjs-lib';
 import { info, error, log } from '../logger';
-import State from '../state';
+import State, { KeyStoreType } from '../state';
 import { toSatoshi } from '../helpers';
-import { decrypt } from '../crypto';
 //eslint-disable-next-line
 const { NumberPrompt, Input, Confirm, Password } = require('enquirer');
 
@@ -51,16 +48,10 @@ export default function (): void {
   });
 
   //Get balance with the explorer
-  const blindingPrivKey = ECPair.fromWIF(
-    wallet.blindingKey,
-    (networks as any)[network.chain]
-  ).privateKey!.toString('hex');
-
   let senderUtxos: UtxoInterface[];
   let assetToBeSent: string;
   let addressToSend: string;
   let amountToBeSent: number;
-  let unsignedTx: string;
 
   asset
     .run()
@@ -75,11 +66,15 @@ export default function (): void {
     })
     .then((recipient: string) => {
       addressToSend = recipient;
-
-      return fetchUtxos(wallet.address, network.explorer);
+      const promises = wallet.addressesWithBlindingKey.map(
+        ({ confidentialAddress }) => {
+          return fetchUtxos(confidentialAddress, network.explorer);
+        }
+      );
+      return Promise.all(promises);
     })
-    .then((utxos: UtxoInterface[]) => {
-      senderUtxos = utxos;
+    .then((utxos: UtxoInterface[][]) => {
+      senderUtxos = utxos.flat();
       return Promise.all(
         utxos.map((utxo: any) => fetchTxHex(utxo.txid, network.explorer))
       );
@@ -94,57 +89,46 @@ export default function (): void {
         utxo.prevout = outputs[index];
       });
 
-      return;
-    })
-    .then(() => {
-      // create a tx using wallet
-      const senderWallet = walletFromAddresses(
-        [
-          {
-            confidentialAddress: wallet.address,
-            blindingPrivateKey: blindingPrivKey,
-          },
-        ],
-        network.chain
-      );
-      const tx = senderWallet.createTx();
-
-      log('Creating and blinding transaction...');
-      unsignedTx = senderWallet.buildTx(
-        tx,
-        senderUtxos,
-        addressToSend,
-        amountToBeSent,
-        assetToBeSent,
-        wallet.address
-      );
-
       return confirm.run();
     })
     .then((keepGoing: boolean) => {
       if (!keepGoing) throw 'Canceled';
 
       const execute =
-        wallet.keystore.type === 'encrypted'
+        wallet.keystore.type === KeyStoreType.Encrypted
           ? () => password.run()
-          : () => Promise.resolve(wallet.keystore.value);
+          : () => Promise.resolve(undefined);
 
       return execute();
     })
-    .then((passwordOrWif: string) => {
-      const wif =
-        wallet.keystore.type === 'encrypted'
-          ? decrypt(wallet.keystore.value, passwordOrWif)
-          : passwordOrWif;
+    .then((password?: string) => {
+      const identity = state.getMnemonicIdentityFromState(password);
+      // create a tx using wallet
+      const senderWallet = walletFromAddresses(
+        wallet.addressesWithBlindingKey,
+        network.chain
+      );
+      const tx = senderWallet.createTx();
 
-      const blindWif = wallet.blindingKey;
+      const nextChangeAddress = identity.getNextChangeAddress();
 
-      const identity = new PrivateKey({
-        chain: network.chain,
-        type: IdentityType.PrivateKey,
-        value: {
-          signingKeyWIF: wif,
-          blindingKeyWIF: blindWif,
+      log('Creating and blinding transaction...');
+      const unsignedTx = senderWallet.buildTx(
+        tx,
+        senderUtxos,
+        addressToSend,
+        amountToBeSent,
+        assetToBeSent,
+        nextChangeAddress.confidentialAddress
+      );
+
+      // cache the newly created address
+      state.set({
+        wallet: {
+          addressesWithBlindingKey: [
+            ...wallet.addressesWithBlindingKey,
+            nextChangeAddress,
+          ],
         },
       });
 

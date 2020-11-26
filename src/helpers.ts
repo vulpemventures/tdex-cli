@@ -18,7 +18,7 @@ export const TAXI_API_URL = {
 };
 
 export function getWalletInfo(addresses: AddressInterface[]): string {
-  if (walletState.addressesWithBlindingKey.length === 0)
+  if (addresses.length === 0)
     return '0 addresses in your wallet: try "wallet address" to generate new one';
 
   let walletInfo = 'Wallet addresses:\n';

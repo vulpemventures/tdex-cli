@@ -152,5 +152,6 @@ export default async function () {
     return;
   } catch (err) {
     error(err);
+    throw err;
   }
 }

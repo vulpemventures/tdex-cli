@@ -45,5 +45,6 @@ export default async function () {
     );
   } catch (err) {
     error(err);
+    throw err;
   }
 }

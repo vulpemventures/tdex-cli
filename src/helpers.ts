@@ -21,14 +21,14 @@ export function getWalletInfo(addresses: AddressInterface[]): string {
   if (!addresses || addresses.length === 0)
     return '0 addresses in your wallet: use "wallet address" to generate new one';
 
-  let walletInfo = 'Wallet addresses:\n';
+  let walletInfo = 'Wallet addresses:\n\n';
 
   addresses.forEach(
     (
       { blindingPrivateKey, confidentialAddress }: AddressInterface,
       index: number
     ) => {
-      walletInfo += ` ${index}- address: ${confidentialAddress}, blinding private key: ${blindingPrivateKey}\n`;
+      walletInfo += `index: ${index}\naddress: ${confidentialAddress}\nblinding: ${blindingPrivateKey}\n\n`;
     }
   );
 

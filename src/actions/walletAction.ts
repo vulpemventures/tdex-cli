@@ -1,4 +1,4 @@
-import { info, log, error, success } from '../logger';
+import { log, error, success } from '../logger';
 import * as bip39 from 'bip39';
 import {
   EsploraIdentityRestorer,
@@ -27,42 +27,6 @@ const password = new enquirer.Password({
   name: 'password',
   message: 'Type your password',
 });
-
-// wallet: generate a new address
-async function walletAddress() {
-  try {
-    const { wallet } = state.get();
-
-    if (!wallet.selected)
-      return error('Wallet no initialized: try "wallet init".');
-
-    let pwd = undefined;
-    if (wallet.keystore.type === KeyStoreType.Encrypted) {
-      pwd = await password.run();
-    }
-
-    const identity = state.getMnemonicIdentityFromState(pwd);
-    await identity.isRestored;
-
-    const newAddressAndBlindPrivKey = identity.getNextAddress();
-
-    // save the new address in cache
-    state.set({
-      wallet: {
-        addressesWithBlindingKey: [
-          ...wallet.addressesWithBlindingKey,
-          newAddressAndBlindPrivKey,
-        ],
-      },
-    });
-
-    return success(
-      `new address: ${newAddressAndBlindPrivKey.confidentialAddress}`
-    );
-  } catch (err) {
-    error(err);
-  }
-}
 
 async function setWalletState(
   identityOpts: IdentityOpts,
@@ -97,16 +61,18 @@ async function setWalletState(
   }
 }
 
-// wallet initialization
-async function walletInit() {
+// command function
+export default async function () {
   try {
     const { network, wallet } = state.get();
 
     if (!network.selected) return error('Select a valid network');
 
     // if wallet is already configured, log the state.
-    if (wallet.selected)
+    if (wallet.selected) {
+      success('Wallet is initialized.');
       return log(getWalletInfo(wallet.addressesWithBlindingKey));
+    }
 
     const restore = new enquirer.Toggle({
       message: 'Want to restore from mnemonic seed?',
@@ -186,25 +152,5 @@ async function walletInit() {
     return;
   } catch (err) {
     error(err);
-  }
-}
-
-// command function
-export default async function () {
-  const subCommandSelect = new enquirer.Select({
-    name: 'walletCommand',
-    message: 'Pick a wallet command',
-    choices: ['init', 'address'],
-  });
-
-  const walletCommand = await subCommandSelect.run();
-
-  switch (walletCommand) {
-    case 'init':
-      info('=========*** Init wallet ***==========\n');
-      return walletInit();
-    case 'address':
-      info('=========*** Wallet: generate new address ***==========\n');
-      return walletAddress();
   }
 }

@@ -117,6 +117,10 @@ export default async function () {
       }
 
       await setWalletState(identity, storageType, randomSeed);
+
+      log('Write down on paper these words to backup your wallet');
+      info(randomSeed);
+
       return;
     }
 

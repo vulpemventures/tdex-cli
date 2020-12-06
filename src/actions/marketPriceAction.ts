@@ -28,7 +28,8 @@ export default function (): void {
         quoteAsset,
       },
       TradeType.BUY,
-      1
+      1,
+      baseAsset
     )
     .then((prices: any[]) => {
       const [first] = prices;

@@ -4106,14 +4106,14 @@ tar-stream@^1.5.2:
 
 tdex-protobuf@tdex-network/tdex-protobuf#beta:
   version "2.0.0"
-  resolved "https://codeload.github.com/tdex-network/tdex-protobuf/tar.gz/18019eb92b888f5bf6aeb0713df94b0c8cc87465"
+  resolved "https://codeload.github.com/tdex-network/tdex-protobuf/tar.gz/8272d771c91f16012e83881d65b8f71bed8eca4f"
   dependencies:
     grpc-web "1.2.0"
 
-tdex-sdk@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-1.2.1.tgz#ab02ce43150f32eec5314e2cbd431ec251f61f06"
-  integrity sha512-nl3ZYtXbwWWY/ZK22qYS3n+60HIT1pBvTEfA+Ur17dNMrrPcRcuEMkl7OhxCfDPyEqlmC6jVPF9V+OLRZraHqQ==
+tdex-sdk@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/tdex-sdk/-/tdex-sdk-1.2.3.tgz#270156da190fff0c5e17582ddafe4649531629fd"
+  integrity sha512-wJWPVnjzrP+g7x5fSMGceM3A5lVV5Opjk3YSi9vn7+GgSTPHYZukk7L75L3KH09+69LhOOgJyLNjFrmfcKGVdA==
   dependencies:
     "@grpc/grpc-js" "^1.0.4"
     "@types/google-protobuf" "^3.7.2"

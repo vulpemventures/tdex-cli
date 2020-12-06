@@ -123,7 +123,12 @@ export default function () {
       const amount = isBuyType ? amountToReceive : amountToBeSent;
 
       trade = new Trade(init);
-      return trade.preview({ market: market.assets, tradeType, amount });
+      return trade.preview({
+        market: market.assets,
+        tradeType,
+        amount,
+        asset: market.assets.baseAsset,
+      });
     })
     .then((preview: any) => {
       if (isBuyType) {
@@ -151,6 +156,7 @@ export default function () {
       const params = {
         market: market.assets,
         amount: isBuyType ? amountToReceive : amountToBeSent,
+        asset: market.assets.baseAsset,
       };
 
       const execute = isBuyType

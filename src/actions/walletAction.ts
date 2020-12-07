@@ -110,6 +110,10 @@ export default async function () {
         },
       };
 
+      log('Write down on paper these words to backup your wallet\n');
+      info(randomSeed);
+      log();
+
       if (storageType === KeyStoreType.Encrypted) {
         const pswd: string = await password.run();
         await setWalletState(identity, storageType, encrypt(randomSeed, pswd));

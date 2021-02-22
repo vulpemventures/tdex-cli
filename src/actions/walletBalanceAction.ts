@@ -1,4 +1,4 @@
-import { fetchBalances } from 'tdex-sdk';
+import { fetchBalances } from 'ldk';
 import { info, error, success, log } from '../logger';
 import { fetchTicker } from '../helpers';
 import State from '../state';

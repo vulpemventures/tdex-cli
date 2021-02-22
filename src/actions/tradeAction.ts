@@ -1,9 +1,10 @@
-import { IdentityOpts, IdentityType, Trade, TradeType } from 'tdex-sdk';
+import { Trade, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
 import State, { IdentityRestorerFromState, KeyStoreType } from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
+import { IdentityOpts, IdentityType } from 'ldk';
 
 const state = new State();
 //eslint-disable-next-line

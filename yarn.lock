@@ -2672,10 +2672,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-ldk@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/ldk/-/ldk-0.2.4.tgz#6ea587c608a3ea80fee679da4c828145195a10fb"
-  integrity sha512-f2nhtQwLvloejB4YQoz0thXfLeMvhjSS5+Hcyd8vHOcsMaULfFXpuMhWght/e/46KYLBbtSewqDLYMTv5rcung==
+ldk@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/ldk/-/ldk-0.2.5.tgz#53502af60081a61fe49447a430d636f47fb38d86"
+  integrity sha512-nmF7ZoKvjOzEQ9/hE36HQCv3e8Cfcu84Cj9vxp96YYV7jiTYT2aR8VHu6EHHXsFTnGaXxPgoelm1yTVCc3ljjg==
   dependencies:
     axios "^0.21.1"
     bip32 "^2.0.6"

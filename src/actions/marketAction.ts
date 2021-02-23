@@ -1,7 +1,7 @@
 import { info, log, error } from '../logger';
 
 import State from '../state';
-import { networks } from 'tdex-sdk';
+import { networks } from 'ldk';
 const state = new State();
 
 export default function (pair: string): void {

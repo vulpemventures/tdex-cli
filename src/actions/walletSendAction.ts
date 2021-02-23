@@ -1,15 +1,16 @@
 import {
-  fetchUtxos,
-  fetchTxHex,
   networks,
   UtxoInterface,
-  walletFromAddresses,
-  Wallet,
-} from 'tdex-sdk';
-import { Transaction, TxOutput } from 'liquidjs-lib';
+  walletFromCoins,
+  RecipientInterface,
+  greedyCoinSelector,
+  psetToUnsignedTx,
+  fetchAndUnblindUtxos,
+} from 'ldk';
+import { address, Psbt } from 'liquidjs-lib';
 import { info, error, log } from '../logger';
 import State, { KeyStoreType } from '../state';
-import { toSatoshi } from '../helpers';
+import { toSatoshi, broadcastTx } from '../helpers';
 //eslint-disable-next-line
 const { NumberPrompt, Input, Confirm, Password } = require('enquirer');
 
@@ -66,29 +67,14 @@ export default function (): void {
     })
     .then((recipient: string) => {
       addressToSend = recipient;
-      const promises = wallet.addressesWithBlindingKey.map(
-        ({ confidentialAddress }) => {
-          return fetchUtxos(confidentialAddress, network.explorer);
-        }
-      );
-      return Promise.all(promises);
-    })
-    .then((utxos: UtxoInterface[][]) => {
-      senderUtxos = utxos.flat();
-      return Promise.all(
-        utxos.map((utxo: any) => fetchTxHex(utxo.txid, network.explorer))
+      return fetchAndUnblindUtxos(
+        wallet.addressesWithBlindingKey,
+        network.explorer
       );
     })
-    .then((txHexs: string[]) => {
-      return txHexs.map(
-        (hex, index) => Transaction.fromHex(hex).outs[senderUtxos[index].vout]
-      );
-    })
-    .then((outputs: TxOutput[]) => {
-      senderUtxos.forEach((utxo: any, index: number) => {
-        utxo.prevout = outputs[index];
-      });
-
+    .then((utxos: UtxoInterface[]) => {
+      senderUtxos = utxos.filter((u) => u.prevout);
+      log('You will send ' + amountToBeSent + ' sats to ' + addressToSend);
       return confirm.run();
     })
     .then((keepGoing: boolean) => {
@@ -101,43 +87,68 @@ export default function (): void {
 
       return execute();
     })
-    .then((password?: string) => {
+    .then(async (password?: string) => {
       const identity = state.getMnemonicIdentityFromState(password);
+      await identity.isRestored;
       // create a tx using wallet
-      const senderWallet = walletFromAddresses(
-        wallet.addressesWithBlindingKey,
-        network.chain
+      const senderWallet = walletFromCoins(
+        senderUtxos,
+        (networks as any)[network.chain]
       );
       const tx = senderWallet.createTx();
-
-      const nextChangeAddress = identity.getNextChangeAddress();
+      const recipient: RecipientInterface = {
+        value: amountToBeSent,
+        address: addressToSend,
+        asset: assetToBeSent,
+      };
 
       log('Creating and blinding transaction...');
       const unsignedTx = senderWallet.buildTx(
         tx,
-        senderUtxos,
-        addressToSend,
-        amountToBeSent,
-        assetToBeSent,
-        nextChangeAddress.confidentialAddress
+        [recipient],
+        greedyCoinSelector(),
+        (_: string) => identity.getNextChangeAddress().confidentialAddress,
+        true
       );
+
+      const addrs = identity.getAddresses();
 
       // cache the newly created address
       state.set({
         wallet: {
-          addressesWithBlindingKey: [
-            ...wallet.addressesWithBlindingKey,
-            nextChangeAddress,
-          ],
+          addressesWithBlindingKey: addrs,
         },
       });
 
-      return identity.signPset(unsignedTx);
+      const { blindingKey } = address.fromConfidential(addressToSend);
+      const recipientScript = address.toOutputScript(addressToSend);
+      const outputsToBlind: number[] = [];
+      const outputsPubKey = new Map<number, string>();
+
+      let i = 0;
+      for (const out of psetToUnsignedTx(unsignedTx).outs) {
+        if (out.script.length > 0) outputsToBlind.push(i);
+        if (out.script.equals(recipientScript))
+          outputsPubKey.set(i, blindingKey.toString('hex'));
+        i++;
+      }
+
+      return identity
+        .blindPset(unsignedTx, outputsToBlind, outputsPubKey)
+        .then((blinded) => identity.signPset(blinded));
     })
     .then((signedTx: string) => {
       // Get the tx in hex format ready to be broadcasted
-      const hex = Wallet.toHex(signedTx);
-      info(hex);
+      const hex = Psbt.fromBase64(signedTx)
+        .finalizeAllInputs()
+        .extractTransaction()
+        .toHex();
+
+      log('broadcasting tx...');
+      return broadcastTx(hex, network.explorer);
+    })
+    .then((txID: string) => {
+      info('Transaction broadcasted. TxID = ' + txID);
     })
     .catch(error);
 }

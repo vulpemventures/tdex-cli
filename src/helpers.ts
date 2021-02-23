@@ -1,7 +1,7 @@
 // @ts-nocheck
 import axios from 'axios';
 import { URL } from 'url';
-import { AddressInterface, networks } from 'tdex-sdk';
+import { AddressInterface, networks } from 'ldk';
 
 import * as fs from 'fs';
 import * as os from 'os';
@@ -151,5 +151,17 @@ export function fileExists(path: string): boolean {
     return false;
   } catch (ignore) {
     return false;
+  }
+}
+
+export async function broadcastTx(
+  hex: string,
+  explorerUrlValue: string
+): Promise<string> {
+  try {
+    const response = await axios.post(`${explorerUrlValue}/tx`, hex);
+    return response.data;
+  } catch (err) {
+    throw err;
   }
 }

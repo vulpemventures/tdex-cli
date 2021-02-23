@@ -7,11 +7,11 @@ Made with 🖤 by [Vulpem Ventures](https://vulpem.com)
 
 * Install with **yarn**
 ```sh
-$ yarn add tdex-cli@beta
+$ yarn add tdex-cli
 ```
 * Install with **npm**
 ```sh
-$ npm install --save tdex-cli@beta
+$ npm install --save tdex-cli
 ```
 
 ## 📄 Usage

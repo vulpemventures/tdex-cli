@@ -4,7 +4,7 @@ import { info, log, error, success } from '../logger';
 import State, { IdentityRestorerFromState, KeyStoreType } from '../state';
 import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
-import { IdentityOpts, IdentityType } from 'ldk';
+import { IdentityOpts, IdentityType } from 'tdex-sdk';
 
 const state = new State();
 //eslint-disable-next-line

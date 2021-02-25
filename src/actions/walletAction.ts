@@ -5,7 +5,7 @@ import {
   IdentityOpts,
   IdentityType,
   Mnemonic,
-} from 'ldk';
+} from 'tdex-sdk';
 import { encrypt } from '../crypto';
 //eslint-disable-next-line
 

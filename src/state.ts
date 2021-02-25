@@ -7,7 +7,7 @@ import {
   IdentityRestorerInterface,
   IdentityType,
   Mnemonic,
-} from 'ldk';
+} from 'tdex-sdk';
 import { decrypt } from './crypto';
 import { mergeDeep } from './helpers';
 

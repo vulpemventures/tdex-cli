@@ -1,7 +1,7 @@
 // @ts-nocheck
 import axios from 'axios';
 import { URL } from 'url';
-import { AddressInterface, networks } from 'ldk';
+import { AddressInterface, networks } from 'tdex-sdk';
 
 import * as fs from 'fs';
 import * as os from 'os';

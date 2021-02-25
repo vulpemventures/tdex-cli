@@ -31,7 +31,6 @@
     "chalk": "^3.0.0",
     "commander": "^5.0.0",
     "enquirer": "^2.3.4",
-    "ldk": "^0.2.5",
     "tdex-protobuf": "tdex-network/tdex-protobuf#beta",
     "tdex-sdk": "^1.3.1"
   },

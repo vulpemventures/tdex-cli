@@ -6,7 +6,7 @@ import {
   greedyCoinSelector,
   psetToUnsignedTx,
   fetchAndUnblindUtxos,
-} from 'ldk';
+} from 'tdex-sdk';
 import { address, Psbt } from 'liquidjs-lib';
 import { info, error, log } from '../logger';
 import State, { KeyStoreType } from '../state';

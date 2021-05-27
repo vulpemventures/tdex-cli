@@ -6,11 +6,12 @@ import { fromSatoshi, toSatoshi } from '../helpers';
 import {
   fetchAndUnblindUtxos,
   greedyCoinSelector,
+  IdentityInterface,
   IdentityOpts,
   IdentityType,
   Mnemonic,
   UtxoInterface,
-} from 'ldk';
+} from 'tdex-sdk';
 import { decrypt } from '../crypto';
 
 const state = new State();
@@ -122,7 +123,10 @@ export default function () {
 
       trade = new Trade(init);
       return trade.preview({
-        market: market.assets,
+        market: {
+          baseAsset: market.assets.baseAsset,
+          quoteAsset: market.assets.quoteAsset,
+        },
         tradeType,
         amount,
         asset: market.assets.baseAsset,
@@ -171,7 +175,14 @@ export default function () {
       };
 
       const identity = new Mnemonic(identityOptions);
+      const execute = async () => {
+        await identity.isRestored;
+        return identity;
+      };
 
+      return execute();
+    })
+    .then((identity: IdentityInterface) => {
       log(`\nSending Trade proposal to provider...`);
       log('Signing with private key...');
 

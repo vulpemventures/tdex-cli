@@ -7,7 +7,7 @@ import {
   IdentityRestorerInterface,
   IdentityType,
   Mnemonic,
-} from 'ldk';
+} from 'tdex-sdk';
 import { decrypt } from './crypto';
 import { mergeDeep } from './helpers';
 
@@ -72,7 +72,7 @@ export interface StateMarketInterface {
   selected: boolean;
   pair: string;
   tickers: any;
-  assets: any;
+  assets: { baseAsset: string; quoteAsset: string };
 }
 
 export interface StateNetworkInterface {
@@ -107,7 +107,10 @@ export const initialState: StateObjectInterface = {
     selected: false,
     pair: '',
     tickers: {},
-    assets: {},
+    assets: {
+      baseAsset: '',
+      quoteAsset: '',
+    },
   },
   wallet: {
     selected: false,

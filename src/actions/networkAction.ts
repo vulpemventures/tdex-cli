@@ -13,13 +13,14 @@ export default function (chain: string, cmdObj: any): void {
     network: { selected: true, chain, explorer: (NETWORKS as any)[chain] },
   });
 
-  const { network } = state.get();
+  let { network } = state.get();
   if (cmdObj.explorer) {
     if (!isValidUrl(cmdObj.explorer))
       return error('The provided endpoint URL is not valid');
 
     state.set({ network: { ...network!, explorer: cmdObj.explorer } });
   }
+  network = state.get().network;
 
   log(
     `Current network: ${network?.chain}\nCurrent explorer: ${network?.explorer}`

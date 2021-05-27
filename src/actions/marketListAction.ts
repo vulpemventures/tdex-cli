@@ -5,10 +5,13 @@ import { TraderClient } from 'tdex-sdk';
 import { tickersFromMarkets } from '../helpers';
 const state = new State();
 
-export default function (): void {
+export default function () {
   info('=========*** Market ***==========\n');
 
   const { provider, market, network } = state.get();
+  if (!network) throw new Error('network is undefined');
+  if (!provider) throw new Error('provider is undefined');
+  if (!market) throw new Error('market is undefined');
 
   if (!network.selected) return error('Select a valid network');
 
@@ -28,6 +31,7 @@ export default function (): void {
 
       state.set({
         provider: {
+          ...provider,
           pairs,
           markets: marketsByTicker,
         },

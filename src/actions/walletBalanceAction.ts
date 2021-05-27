@@ -54,6 +54,9 @@ export default function (): void {
 
   const { wallet, network } = state.get();
 
+  if (!wallet) throw new Error('wallet is undefined');
+  if (!network) throw new Error('network is undefined');
+
   if (!wallet.selected)
     return error(
       'A wallet is required. Create or restore with the wallet command'

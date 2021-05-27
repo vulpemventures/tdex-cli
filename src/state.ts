@@ -54,10 +54,10 @@ export interface StateInterface {
 }
 
 export interface StateObjectInterface {
-  network: StateNetworkInterface;
-  provider: StateProviderInterface;
-  market: StateMarketInterface;
-  wallet: StateWalletInterface;
+  network?: StateNetworkInterface;
+  provider?: StateProviderInterface;
+  market?: StateMarketInterface;
+  wallet?: StateWalletInterface;
 }
 
 export interface StateProviderInterface {
@@ -156,12 +156,11 @@ export default class State implements StateInterface {
     this.path = path;
   }
 
-  set(obj: Record<string, any>): void {
+  set(obj: StateObjectInterface): void {
     const currentState = this.get();
-
     const newState = mergeDeep(currentState, obj);
 
-    this.state = newState;
+    this.state = newState as StateObjectInterface;
     this.stateSerialized = JSON.stringify(newState, undefined, 2);
     fs.writeFileSync(this.path, this.stateSerialized, {
       encoding: 'utf8',
@@ -178,8 +177,9 @@ export default class State implements StateInterface {
   }
 
   getMnemonicIdentityFromState(password?: string): Mnemonic {
-    let seed = this.state.wallet.keystore.value;
-    if (this.state.wallet.keystore.type == KeyStoreType.Encrypted) {
+    let seed = this.state.wallet?.keystore.value;
+    if (!seed) throw new Error('seed is undefined');
+    if (this.state.wallet?.keystore.type == KeyStoreType.Encrypted) {
       if (!password || password.length === 0)
         throw new Error(
           'The wallet seed is encrypted, please provide the password.'
@@ -187,8 +187,12 @@ export default class State implements StateInterface {
       seed = decrypt(seed, password);
     }
 
+    if (!this.state.wallet) {
+      throw new Error('wallet state is undefined');
+    }
+
     const opts: IdentityOpts = {
-      chain: this.state.network.chain,
+      chain: this.state.network?.chain || 'regtest',
       type: IdentityType.Mnemonic,
       value: {
         mnemonic: seed,

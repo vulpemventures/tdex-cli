@@ -1,11 +1,7 @@
-// @ts-nocheck
 import axios from 'axios';
 import { URL } from 'url';
 import { AddressInterface, networks } from 'ldk';
-
 import * as fs from 'fs';
-import * as os from 'os';
-import * as PathModule from 'path';
 
 export const NETWORKS = {
   liquid: 'https://blockstream.info/liquid/api',
@@ -54,7 +50,7 @@ export async function fetchTicker(
   asset: string,
   chain: string,
   url: string
-): Promise<any> {
+): Promise<string | undefined> {
   if (asset === (networks as any)[chain].assetHash) return 'LBTC';
   try {
     const res = await axios.get(`${url}/asset/${asset}`);
@@ -65,12 +61,12 @@ export async function fetchTicker(
 }
 
 export async function tickersFromMarkets(
-  markets: Array<any>,
+  markets: Array<{ baseAsset: string; quoteAsset: string }>,
   chain: string,
   url: string
 ): Promise<any> {
   const marketsByTicker: any = {};
-  let baseAssetTicker: string;
+  let baseAssetTicker: string | undefined = undefined;
 
   for (let i = 0; i < markets.length; ++i) {
     const { baseAsset, quoteAsset } = markets[i];
@@ -90,7 +86,7 @@ export async function tickersFromMarkets(
   return marketsByTicker;
 }
 
-export function isValidUrl(s) {
+export function isValidUrl(s: string): boolean {
   try {
     new URL(s);
     return true;
@@ -99,8 +95,9 @@ export function isValidUrl(s) {
   }
 }
 
-export function mergeDeep(...objects) {
-  const isObject = (obj) => obj && typeof obj === 'object';
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function mergeDeep(...objects: Record<string, any>[]) {
+  const isObject = (obj: any): boolean => obj && typeof obj === 'object';
 
   return objects.reduce((prev, obj) => {
     Object.keys(obj).forEach((key) => {

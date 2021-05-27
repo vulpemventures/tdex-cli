@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { info, log, error } from '../logger';
 import State from '../state';
 import { isValidUrl, NETWORKS } from '../helpers';
@@ -12,15 +13,15 @@ export default function (chain: string, cmdObj: any): void {
     network: { selected: true, chain, explorer: (NETWORKS as any)[chain] },
   });
 
+  const { network } = state.get();
   if (cmdObj.explorer) {
     if (!isValidUrl(cmdObj.explorer))
       return error('The provided endpoint URL is not valid');
 
-    state.set({ network: { explorer: cmdObj.explorer } });
+    state.set({ network: { ...network!, explorer: cmdObj.explorer } });
   }
 
-  const {
-    network: { explorer },
-  } = state.get();
-  log(`Current network: ${chain}\nCurrent explorer: ${explorer}`);
+  log(
+    `Current network: ${network?.chain}\nCurrent explorer: ${network?.explorer}`
+  );
 }

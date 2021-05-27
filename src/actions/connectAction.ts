@@ -9,7 +9,9 @@ const state = new State();
 export default function (endpoint: string): void {
   info('=========*** Provider ***==========\n');
 
-  const { network } = state.get();
+  const { network, provider } = state.get();
+  if (!network) throw new Error('network is undefined');
+  if (!provider) throw new Error('provider is undefined');
 
   if (!network.selected) return error('Select a valid network');
 
@@ -27,6 +29,7 @@ export default function (endpoint: string): void {
 
       state.set({
         provider: {
+          ...provider,
           endpoint,
           pairs,
           markets: marketsByTicker,

@@ -7,6 +7,10 @@ export default function (): void {
   info('=========*** Info ***==========\n');
 
   const { market, provider, network, wallet } = state.get();
+  if (!wallet) throw new Error('wallet is undefined');
+  if (!network) throw new Error('network is undefined');
+  if (!provider) throw new Error('provider is undefined');
+  if (!market) throw new Error('market is undefined');
 
   const infos: Array<string> = [];
   if (network.selected)

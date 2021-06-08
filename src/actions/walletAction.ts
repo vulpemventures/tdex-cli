@@ -5,7 +5,7 @@ import {
   IdentityOpts,
   IdentityType,
   Mnemonic,
-} from 'ldk';
+} from 'tdex-sdk';
 import { encrypt } from '../crypto';
 //eslint-disable-next-line
 
@@ -40,9 +40,11 @@ async function setWalletState(
       await identity.isRestored;
     }
 
+    const addrs = await identity.getAddresses();
+
     const wallet: StateWalletInterface = {
       selected: true,
-      addressesWithBlindingKey: identity.getAddresses(),
+      addressesWithBlindingKey: addrs,
       keystore: {
         type: storageType,
         value: seed,
@@ -55,7 +57,7 @@ async function setWalletState(
     success(`Wallet has been created/restored successfully`);
     log();
     log(`Be sure to backup your data directory before sending any funds`);
-    log(getWalletInfo(state.get().wallet.addressesWithBlindingKey));
+    log(getWalletInfo(state.get().wallet?.addressesWithBlindingKey || []));
   } catch (err) {
     error(err);
   }
@@ -66,6 +68,8 @@ export default async function () {
   info('=========*** Wallet ***==========\n');
   try {
     const { network, wallet } = state.get();
+    if (!wallet) throw new Error('wallet is undefined');
+    if (!network) throw new Error('network is undefined');
 
     if (!network.selected) return error('Select a valid network');
 

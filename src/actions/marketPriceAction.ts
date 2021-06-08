@@ -8,6 +8,8 @@ export default function (): void {
   info('=========*** Market ***==========\n');
 
   const { market, provider } = state.get();
+  if (!provider) throw new Error('provider is undefined');
+  if (!market) throw new Error('market is undefined');
 
   if (!provider.selected)
     return error(

@@ -6,7 +6,7 @@ import {
   greedyCoinSelector,
   psetToUnsignedTx,
   fetchAndUnblindUtxos,
-} from 'ldk';
+} from 'tdex-sdk';
 import { address, Psbt } from 'liquidjs-lib';
 import { info, error, log } from '../logger';
 import State, { KeyStoreType } from '../state';
@@ -20,6 +20,8 @@ export default function (): void {
   info('=========*** Wallet ***==========\n');
 
   const { wallet, network } = state.get();
+  if (!wallet) throw new Error('wallet is undefined');
+  if (!network) throw new Error('network is undefined');
 
   if (!wallet.selected)
     return error(
@@ -103,19 +105,21 @@ export default function (): void {
       };
 
       log('Creating and blinding transaction...');
+      const changeAddress = await identity.getNextChangeAddress();
       const unsignedTx = senderWallet.buildTx(
         tx,
         [recipient],
         greedyCoinSelector(),
-        (_: string) => identity.getNextChangeAddress().confidentialAddress,
+        () => changeAddress.confidentialAddress,
         true
       );
 
-      const addrs = identity.getAddresses();
+      const addrs = await identity.getAddresses();
 
       // cache the newly created address
       state.set({
         wallet: {
+          ...wallet,
           addressesWithBlindingKey: addrs,
         },
       });

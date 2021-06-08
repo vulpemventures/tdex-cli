@@ -1,4 +1,4 @@
-import { fetchBalances } from 'ldk';
+import { fetchBalances } from 'tdex-sdk';
 import { info, error, success, log } from '../logger';
 import { fetchTicker } from '../helpers';
 import State from '../state';
@@ -53,6 +53,9 @@ export default function (): void {
   info('=========*** Wallet ***==========\n');
 
   const { wallet, network } = state.get();
+
+  if (!wallet) throw new Error('wallet is undefined');
+  if (!network) throw new Error('network is undefined');
 
   if (!wallet.selected)
     return error(

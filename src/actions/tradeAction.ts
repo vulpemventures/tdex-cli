@@ -1,10 +1,18 @@
-import { Trade, TradeType } from 'tdex-sdk';
+import { BuySellOpts, Trade, TradeOpts, TradeType } from 'tdex-sdk';
 import { info, log, error, success } from '../logger';
 
 import State, { IdentityRestorerFromState, KeyStoreType } from '../state';
-import { decrypt } from '../crypto';
 import { fromSatoshi, toSatoshi } from '../helpers';
-import { IdentityOpts, IdentityType } from 'ldk';
+import {
+  fetchAndUnblindUtxos,
+  greedyCoinSelector,
+  IdentityInterface,
+  IdentityOpts,
+  IdentityType,
+  Mnemonic,
+  UtxoInterface,
+} from 'tdex-sdk';
+import { decrypt } from '../crypto';
 
 const state = new State();
 //eslint-disable-next-line
@@ -21,6 +29,10 @@ export default function () {
   info('=========*** Trade ***==========\n');
 
   const { wallet, provider, market, network } = state.get();
+  if (!wallet) throw new Error('wallet is undefined');
+  if (!network) throw new Error('network is undefined');
+  if (!provider) throw new Error('provider is undefined');
+  if (!market) throw new Error('market is undefined');
 
   if (!network.selected) return error('Select a valid network first');
 
@@ -36,9 +48,10 @@ export default function () {
     return error('A wallet is required. Create or restore with wallet command');
 
   const toggle = new Toggle({
-    message: `Do you want to buy or sell ${
-      market.tickers[market.assets.baseAsset]
-    }?`,
+    message:
+      'Do you want to buy or sell ' +
+      market.tickers[market.assets.baseAsset] +
+      '?',
     enabled: 'BUY',
     disabled: 'SELL',
   });
@@ -90,33 +103,18 @@ export default function () {
       return Promise.resolve();
     })
     .then(() => {
-      const execute =
-        wallet.keystore.type === KeyStoreType.Encrypted
-          ? () => password.run()
-          : () => Promise.resolve(wallet.keystore.value);
-
-      return execute();
+      const utxos = fetchAndUnblindUtxos(
+        wallet.addressesWithBlindingKey,
+        network.explorer
+      );
+      return utxos;
     })
-    .then((passwordOrWif: string) => {
-      const seed =
-        wallet.keystore.type === KeyStoreType.Encrypted
-          ? decrypt(wallet.keystore.value, passwordOrWif)
-          : passwordOrWif;
-
-      const identityOptions: IdentityOpts = {
-        chain: network.chain,
-        type: IdentityType.Mnemonic,
-        value: {
-          mnemonic: seed,
-        },
-        initializeFromRestorer: true,
-        restorer: new IdentityRestorerFromState(wallet),
-      };
-
-      const init = {
+    .then((utxos: UtxoInterface[]) => {
+      const init: TradeOpts = {
         providerUrl: provider.endpoint,
         explorerUrl: network.explorer,
-        identity: identityOptions,
+        coinSelector: greedyCoinSelector(),
+        utxos,
       };
 
       // Fetch market rate from daemon and calulcate prices for each ticker
@@ -125,7 +123,10 @@ export default function () {
 
       trade = new Trade(init);
       return trade.preview({
-        market: market.assets,
+        market: {
+          baseAsset: market.assets.baseAsset,
+          quoteAsset: market.assets.quoteAsset,
+        },
         tradeType,
         amount,
         asset: market.assets.baseAsset,
@@ -150,30 +151,68 @@ export default function () {
     })
     .then((keepGoing: boolean) => {
       if (!keepGoing) throw 'Canceled';
+      const execute =
+        wallet.keystore.type === KeyStoreType.Encrypted
+          ? () => password.run()
+          : () => Promise.resolve(wallet.keystore.value);
 
+      return execute();
+    })
+    .then((passwordOrWif: string) => {
+      const seed =
+        wallet.keystore.type === KeyStoreType.Encrypted
+          ? decrypt(wallet.keystore.value, passwordOrWif)
+          : passwordOrWif;
+
+      const identityOptions: IdentityOpts = {
+        chain: network.chain,
+        type: IdentityType.Mnemonic,
+        value: {
+          mnemonic: seed,
+        },
+        initializeFromRestorer: true,
+        restorer: new IdentityRestorerFromState(wallet),
+      };
+
+      const identity = new Mnemonic(identityOptions);
+      const execute = async () => {
+        await identity.isRestored;
+        return identity;
+      };
+
+      return execute();
+    })
+    .then((identity: IdentityInterface) => {
       log(`\nSending Trade proposal to provider...`);
       log('Signing with private key...');
 
-      const params = {
+      const params: BuySellOpts = {
         market: market.assets,
         amount: isBuyType ? amountToReceive : amountToBeSent,
         asset: market.assets.baseAsset,
+        identity,
       };
 
       const execute = isBuyType
         ? () => trade.buy(params)
         : () => trade.sell(params);
-      return execute();
+
+      const returnPromise = async () => {
+        const txid = await execute();
+        // overwrite the addresses cache in state
+        const addresses = await identity.getAddresses();
+        state.set({
+          wallet: {
+            ...wallet,
+            addressesWithBlindingKey: addresses,
+          },
+        });
+        return txid;
+      };
+
+      return returnPromise();
     })
     .then((txid: string) => {
-      // overwrite the addresses cache in state
-      const addresses = trade.identity.getAddresses();
-      state.set({
-        wallet: {
-          addressesWithBlindingKey: addresses,
-        },
-      });
-
       success('Trade completed!\n');
       info(`tx hash ${txid}`);
     })

@@ -1,13 +1,15 @@
 import { info, log, error } from '../logger';
 
 import State from '../state';
-import { networks } from 'ldk';
+import { networks } from 'tdex-sdk';
 const state = new State();
 
 export default function (pair: string): void {
   info('=========*** Market ***==========\n');
 
   const { provider, network } = state.get();
+  if (!provider) throw new Error('provider is undefined');
+  if (!network) throw new Error('network is undefined');
 
   if (!network.selected) return error('Select a valid network');
 

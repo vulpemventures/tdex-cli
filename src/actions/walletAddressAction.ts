@@ -13,13 +13,14 @@ const password = new enquirer.Password({
 });
 
 // wallet: generate a new address
-export default async function () {
+export default async function (): Promise<void> {
   info('=========*** Wallet ***==========\n');
   try {
     const { wallet } = state.get();
+    if (!wallet) throw new Error('wallet state is undefined');
 
     if (!wallet.selected)
-      return error('Wallet no initialized: try "wallet init".');
+      return error('Wallet not initialized: try "wallet init".');
 
     let pwd = undefined;
     if (wallet.keystore.type === KeyStoreType.Encrypted) {
@@ -29,11 +30,12 @@ export default async function () {
     const identity = state.getMnemonicIdentityFromState(pwd);
     await identity.isRestored;
 
-    const newAddressAndBlindPrivKey = identity.getNextAddress();
+    const newAddressAndBlindPrivKey = await identity.getNextAddress();
 
     // save the new address in cache
     state.set({
       wallet: {
+        ...wallet,
         addressesWithBlindingKey: [
           ...wallet.addressesWithBlindingKey,
           newAddressAndBlindPrivKey,

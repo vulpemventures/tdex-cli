@@ -16,7 +16,7 @@ $ npm install --save tdex-cli
 
 ## 📄 Usage
 
-In-depth documentation for using the tdex-cli is available at [docs.tdex.network](https://docs.tdex.network/tdex-cli.html)
+In-depth documentation for using the tdex-cli is available at [dev.tdex.network](https://dev.tdex.network/docs/trader/cli)
 
 
 ## Development
